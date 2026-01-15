@@ -1,0 +1,1005 @@
+// prisma/schema.prisma - COMPREHENSIVE VERSION
+
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["fullTextSearch", "fullTextIndex"]
+}
+
+datasource db {
+  provider  = "postgresql"
+}
+
+// ============ USER & AUTHENTICATION ============
+
+enum UserRole {
+  STAKEHOLDER
+  STUDENT
+  MANAGER
+  ADMIN
+  RESEARCHER
+}
+
+model User {
+  id                String   @id @default(cuid())
+  email             String   @unique
+  name              String
+  role              UserRole
+  passwordHash      String?
+  avatar            String?
+  phone             String?
+  alternatePhone    String?
+  preferredLanguage String?
+  timezone          String   @default("Asia/Kolkata")
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  lastLoginAt       DateTime?
+  
+  // Role-specific profiles
+  stakeholderProfile StakeholderProfile?
+  studentProfile     StudentProfile?
+  managerProfile     ManagerProfile?
+  researcherProfile  ResearcherProfile?
+  
+  // Activities
+  interactionsAsInitiator Interaction[] @relation("InitiatorInteractions")
+  interactionsAsTarget    Interaction[] @relation("TargetInteractions")
+  calendarEvents          CalendarEvent[]
+  notes                   Note[]
+  researchReports         ResearchReport[] // Reports authored by user
+  createdStakeholders     StakeholderProfile[] @relation("CreatedBy")
+  
+  @@index([email])
+  @@index([role])
+}
+
+// ============ COMPREHENSIVE STAKEHOLDER PROFILE ============
+
+model StakeholderProfile {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // ========== BASIC IDENTIFICATION ==========
+  designation String
+  alternateDesignations String[]
+  organization String?
+  organizationType String? // Government, NGO, Private, Academic, Cooperative, Community
+  department String?
+  
+  // ========== BIOGRAPHICAL INFO ==========
+  bio         String?   @db.Text
+  dateOfBirth DateTime?
+  gender      String?
+  education   String[]
+  
+  // ========== PROFESSIONAL DETAILS ==========
+  expertise   String[]
+  specializations String[]
+  certifications String[]
+  yearsExperience Int?
+  careerHistory Json?
+  
+  // ========== WORK CONTEXT ==========
+  teamSize    Int?
+  teamComposition Json?
+  budget      Float?
+  jurisdiction String[]
+  decisionMakingAuthority String?
+  keyResponsibilities String[] @db.Text
+  reportingTo String?
+  
+  // ========== LOCATION & REACH ==========
+  // Primary Location
+  district    String    // One of 9 districts
+  taluk       String?
+  village     String?
+  address     String?   @db.Text
+  landmark    String?
+  pincode     String?
+  latitude    Float?
+  longitude   Float?
+  
+  // Operational Coverage
+  coverageDistricts String[]
+  coverageTaluks    String[]
+  coverageVillages  String[]
+  serviceRadius     Int?
+  
+  // ========== CONTACT INFORMATION ==========
+  officePhone String?
+  officeMobile String?
+  officeEmail String?
+  officeAddress String? @db.Text
+  personalMobile String?
+  personalEmail String?
+  whatsapp    String?
+  telegram    String?
+  
+  // Social & Professional Networks
+  linkedIn    String?
+  twitter     String?
+  facebook    String?
+  instagram   String?
+  researchGate String?
+  googleScholar String?
+  website     String?
+  organizationWebsite String?
+  
+  // Contact Preferences
+  preferredContactMethod String?
+  availableHours String?
+  
+  // ========== CATEGORIZATION & TAGGING ==========
+  sectors     Sector[]
+  problemStatements ProblemStatement[]
+  solutions   Solution[]
+  tags        String[]
+  keywords    String[]
+  
+  // ========== COMMUNITY & DEMOGRAPHIC CONTEXT ==========
+  communityAffiliation String?
+  casteCommunity String?
+  languagesSpoken String[]
+  culturalContext String? @db.Text
+  
+  // ========== ROLE-SPECIFIC ATTRIBUTES ==========
+  // For Farmers
+  landHolding Float?
+  cropsCultivated String[]
+  farmingType String?
+  irrigationSource String[]
+  
+  // For Fishermen
+  boatType String?
+  fishingLicense String?
+  catchType String[]
+  
+  // For Healthcare Workers
+  serviceType String?
+  patientsServed Int?
+  healthFacility String?
+  
+  // For Tribal Members
+  tribe String?
+  tribalCard String?
+  forestRights String?
+  
+  // For NGO Workers
+  ngoRegistration String?
+  ngoDarpanId String?
+  donorAgencies String[]
+  
+  // For Government Officials
+  employeeId String?
+  cadre String?
+  postingHistory Json?
+  transferDate DateTime?
+  
+  // ========== IMPACT & METRICS ==========
+  populationServed Int?
+  geographicReach String?
+  annualBeneficiaries Int?
+  keyAchievements String[] @db.Text
+  awards String[]
+  publications String[]
+  
+  // ========== RESOURCES & CAPACITY ==========
+  infrastructure String[]
+  vehiclesOwned String[]
+  technologyAccess String[]
+  fundingSource String[]
+  annualBudget Float?
+  
+  // ========== COLLABORATION & NETWORKING ==========
+  partnerOrganizations String[]
+  networkMemberships String[]
+  collaborationInterest String[]
+  mentoringCapability Boolean @default(false)
+  trainingCapability Boolean @default(false)
+  
+  // ========== CHALLENGES & NEEDS ==========
+  topChallenges String[] @db.Text
+  resourceNeeds String[]
+  capacityGaps String[]
+  priorityAreas String[]
+  
+  // ========== INNOVATION & SOLUTIONS ==========
+  innovationsPracticed String[] @db.Text
+  successStories String[] @db.Text
+  replicableModels String[] @db.Text
+  
+  // ========== VERIFICATION & QUALITY ==========
+  verificationStatus String @default("pending")
+  verificationDate DateTime?
+  verifiedBy String?
+  verificationNotes String? @db.Text
+  dataQualityScore Int?
+  lastVerified DateTime?
+  
+  // ========== DATA PROVENANCE ==========
+  dataSource String?
+  collectedBy String?
+  collectionMethod String?
+  addedBy     String?
+  addedByUser User? @relation("CreatedBy", fields: [addedBy], references: [id])
+  
+  // ========== ENGAGEMENT TRACKING ==========
+  totalInteractions Int @default(0)
+  lastInteraction DateTime?
+  engagementScore Int?
+  responseRate Float?
+  
+  // ========== RELATIONSHIPS ==========
+  interactions Interaction[]
+  linkedStakeholders StakeholderLink[] @relation("StakeholderA")
+  linkedByStakeholders StakeholderLink[] @relation("StakeholderB")
+  supportingOrgs SupportingOrgRelation[]
+  transcripts Transcript[]
+  valuePropositionsTarget ValueProposition[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([district])
+  @@index([verificationStatus])
+  @@index([organizationType])
+  // @@fulltext([bio, organization, designation])
+}
+
+// ============ SECTOR TAXONOMY ============
+
+model Sector {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  slug        String   @unique
+  description String?  @db.Text
+  icon        String?
+  color       String?
+  parentId    String?
+  parent      Sector?  @relation("SubSectors", fields: [parentId], references: [id])
+  children    Sector[] @relation("SubSectors")
+  
+  // Relationships
+  stakeholders StakeholderProfile[]
+  problemStatements ProblemStatement[]
+  solutions   Solution[]
+  researchReports ResearchReport[]
+  
+  // Metadata
+  problemCount Int @default(0)
+  stakeholderCount Int @default(0)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([slug])
+}
+
+// ============ PROBLEM STATEMENTS ============
+
+model ProblemStatement {
+  id          String   @id @default(cuid())
+  code        String   @unique // e.g., "PS_1.1"
+  title       String
+  description String   @db.Text
+  severity    String   // Critical, High, Medium-High, Medium, Low
+  
+  // Geographic Scope
+  districts   String[]
+  taluks      String[]
+  villages    String[]
+  
+  // Categorization
+  sectors     Sector[]
+  domain      String   // e.g., "Agriculture & Irrigation"
+  subDomain   String?
+  tags        String[]
+  keywords    String[]
+  
+  // Impact Assessment
+  affectedPopulation Int?
+  affectedDemographic String? // e.g., "Small coffee growers"
+  currentImpact String? @db.Text
+  projectedImpact String? @db.Text
+  
+  // Context
+  rootCauses  String[] @db.Text
+  contributingFactors String[] @db.Text
+  barriers    String[] @db.Text
+  historicalContext String? @db.Text
+  
+  // Metrics & Evidence
+  quantitativeData Json? // Structured data about the problem
+  dataSource String?
+  lastUpdated DateTime?
+  
+  // Stakeholder Mapping
+  stakeholders StakeholderProfile[]
+  primaryStakeholders String[] // Key contact IDs
+  affectedGroups String[] // Types of people affected
+  
+  // Solution Mapping
+  solutions   Solution[]
+  
+  // Resources
+  documents   String[] // URLs or file paths
+  references  String[] // Citations
+  
+  // Status & Tracking
+  status      String @default("active") // active, solved, monitoring
+  priority    Int? // 1-10 priority ranking
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([severity])
+  @@index([domain])
+  // @@fulltext([title, description])
+}
+
+// ============ SOLUTIONS ============
+
+model Solution {
+  id          String   @id @default(cuid())
+  code        String   @unique // e.g., "SOL_1.1.A"
+  title       String
+  description String   @db.Text
+  type        String   // Technology, Policy, Process, Infrastructure, Training
+  status      String   // Proposed, In-Progress, Implemented, Validated, Scaled
+  
+  // Problem Mapping
+  problemStatements ProblemStatement[]
+  
+  // Stakeholders
+  stakeholders StakeholderProfile[]
+  
+  // Solution Framework
+  approach    String?  @db.Text
+  methodology String?  @db.Text
+  components  String[] @db.Text
+  
+  // Implementation
+  timeline    String?
+  phases      Json? // Structured timeline data
+  milestones  String[]
+  
+  // Resources Required
+  budget      Float?
+  budgetBreakdown Json?
+  humanResources String[] @db.Text
+  technicalResources String[] @db.Text
+  infrastructure String[] @db.Text
+  
+  // Stakeholders & Partners
+  leadOrganization String?
+  implementingPartners String[]
+  fundingPartners String[]
+  technicalPartners String[]
+  
+  // Supporting Organizations
+  supportingOrgs SupportingOrg[]
+  
+  // Evidence & Validation
+  pilotResults String? @db.Text
+  evidence    String[] // URLs or file paths
+  metrics     String?  @db.Text
+  successIndicators String[]
+  
+  // Impact
+  expectedImpact String? @db.Text
+  actualImpact String? @db.Text
+  beneficiaries Int?
+  geographicReach String[]
+  
+  // Scalability
+  scalabilityAssessment String? @db.Text
+  replicationPotential String? @db.Text
+  adaptationGuidelines String? @db.Text
+  
+  // Risk Assessment
+  risks       String[] @db.Text
+  mitigationStrategies String[] @db.Text
+  
+  // Learning & Documentation
+  lessonsLearned String? @db.Text
+  bestPractices String[] @db.Text
+  documentation String[] // URLs or file paths
+  
+  // Categorization
+  sectors     Sector[]
+  tags        String[]
+  
+  // Ownership
+  proposedBy  String? // User ID
+  proposedDate DateTime?
+  lastReviewed DateTime?
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([status])
+  @@index([type])
+  // @@fulltext([title, description, approach])
+}
+
+// ============ SUPPORTING ORGANIZATIONS ============
+
+model SupportingOrg {
+  id          String   @id @default(cuid())
+  name        String
+  shortName   String?
+  type        String   // Incubator, Accelerator, NGO, Government, Corporate, Academic, Research, Financial
+  subType     String?  // More specific classification
+  
+  // Organization Details
+  description String?  @db.Text
+  mission     String?  @db.Text
+  vision      String?  @db.Text
+  founded     Int? // Year
+  registrationNumber String?
+  ngoDarpanId String?
+  
+  // Contact Information
+  website     String?
+  email       String?
+  phone       String?
+  alternatePhone String?
+  
+  // Location
+  district    String?
+  address     String?  @db.Text
+  pincode     String?
+  state       String?
+  country     String @default("India")
+  
+  // Leadership
+  ceo         String?
+  founder     String?
+  keyContacts Json? // Array of contact persons
+  
+  // Scale & Reach
+  geographicReach String[] // Districts/states covered
+  annualBudget Float?
+  teamSize    Int?
+  beneficiariesServed Int?
+  
+  // Capabilities & Services
+  supportsStages String[] // Idea, Prototype, Pilot, Scale
+  focusSectors   String[]
+  focusProblems  String[] // Problem domains
+  
+  resourcesOffered String[] // Funding, Mentorship, Infrastructure, Training, etc.
+  programsOffered String[] // Specific programs
+  servicesOffered String[] // Specific services
+  
+  // Financial Support
+  fundingRange String? // e.g., "₹5L - ₹50L"
+  fundingType String[] // Grant, Loan, Equity, Prize
+  applicationProcess String? @db.Text
+  eligibilityCriteria String? @db.Text
+  
+  // Infrastructure & Resources
+  facilities  String[]
+  equipment   String[]
+  digitalResources String[]
+  
+  // Track Record
+  projectsSupported Int?
+  successStories String[] @db.Text
+  notableAlumni String[]
+  awards      String[]
+  
+  // Network & Partnerships
+  partnerOrganizations String[]
+  networkMemberships String[]
+  accreditations String[]
+  
+  // Application & Access
+  applicationDeadlines Json? // Structured deadline data
+  applicationUrl String?
+  contactForApplication String?
+  selectionProcess String? @db.Text
+  
+  // Documentation
+  documents   String[] // URLs or file paths
+  reports     String[] // Annual reports, impact reports
+  
+  // Relationships
+  solutions   Solution[]
+  stakeholders SupportingOrgRelation[]
+  
+  // Metadata
+  verified    Boolean @default(false)
+  verifiedDate DateTime?
+  dataQuality Int? // 1-100 score
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([type])
+  @@index([district])
+  // @@fulltext([name, description, mission])
+}
+
+model SupportingOrgRelation {
+  id            String   @id @default(cuid())
+  stakeholder   StakeholderProfile @relation(fields: [stakeholderId], references: [id], onDelete: Cascade)
+  stakeholderId String
+  organization  SupportingOrg @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  orgId         String
+  
+  relationshipType String // Partner, Beneficiary, Alumni, Advisor, Mentor, Funder
+  role          String? // Specific role in the relationship
+  notes         String?  @db.Text
+  startDate     DateTime?
+  endDate       DateTime?
+  active        Boolean @default(true)
+  
+  // Engagement Details
+  projectsCollaborated String[]
+  fundingReceived Float?
+  supportReceived String[]
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@unique([stakeholderId, orgId])
+}
+
+// ============ STAKEHOLDER NETWORK ============
+
+model StakeholderLink {
+  id           String   @id @default(cuid())
+  stakeholderA StakeholderProfile @relation("StakeholderA", fields: [stakeholderAId], references: [id], onDelete: Cascade)
+  stakeholderAId String
+  stakeholderB StakeholderProfile @relation("StakeholderB", fields: [stakeholderBId], references: [id], onDelete: Cascade)
+  stakeholderBId String
+  
+  linkType     String   // Similar-Problem, Complementary, Competitor, Collaborator, Mentor-Mentee, Peer
+  strength     Int      // 1-10 connection strength
+  description  String?  @db.Text
+  notes        String?  @db.Text
+  
+  // Collaboration Context
+  commonProblems String[]
+  commonSolutions String[]
+  sharedProjects String[]
+  
+  // Status
+  active       Boolean @default(true)
+  lastInteraction DateTime?
+  
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  @@unique([stakeholderAId, stakeholderBId])
+  @@index([linkType])
+}
+
+// ============ STUDENT/ENTREPRENEUR PROFILES ============
+
+model StudentProfile {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Academic Info
+  institution String?
+  program     String?
+  year        Int?
+  rollNumber  String?
+  
+  // Project Context
+  projectName String?
+  projectDescription String? @db.Text
+  focusArea   String?
+  focusSectors String[]
+  teamSize    Int?
+  teamMembers Json?
+  
+  // Problem Focus
+  workingOnProblems String[] // Problem statement IDs
+  
+  // Manager Assignment
+  managerId   String?
+  manager     ManagerProfile? @relation(fields: [managerId], references: [id])
+  
+  // Progress Tracking
+  stage       String? // Ideation, Research, Validation, Prototyping, Pilot, Scale
+  milestones  Json?
+  
+  // Value Propositions
+  valuePropositions ValueProposition[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ValueProposition {
+  id          String   @id @default(cuid())
+  student     StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId   String
+  
+  // Value Proposition Canvas
+  // Customer Profile
+  customerJobs      String[] @db.Text // Jobs to be done
+  pains             String[] @db.Text // Customer pains
+  gains             String[] @db.Text // Customer gains
+  
+  // Value Map
+  painRelievers     String[] @db.Text // How product relieves pains
+  gainCreators      String[] @db.Text // How product creates gains
+  productsServices  String[] @db.Text // Actual products/services
+  
+  // Problem-Solution Fit
+  problemStatement String? // Problem statement ID
+  proposedSolution String? // Solution ID
+  
+  // Stakeholder Validation
+  targetStakeholder String? // StakeholderProfile ID
+  targetStakeholderProfile StakeholderProfile? @relation(fields: [targetStakeholder], references: [id])
+  
+  // Validation Status
+  validationStatus  String   @default("draft") // draft, validated, needs-revision, rejected
+  validationNotes   String?  @db.Text
+  validatedBy       String? // User ID
+  validatedDate     DateTime?
+  
+  // Feedback & Iterations
+  feedback          Json? // Structured feedback data
+  iterationNumber   Int @default(1)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([studentId])
+  @@index([validationStatus])
+}
+
+// ============ MANAGER/MENTOR PROFILES ============
+
+model ManagerProfile {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Professional Info
+  organization String?
+  role        String?
+  bio         String?  @db.Text
+  expertise   String[]
+  
+  // Mentorship Capacity
+  maxMentees  Int?
+  mentees     StudentProfile[]
+  
+  // Focus Areas
+  focusSectors String[]
+  focusProblems String[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ResearcherProfile {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Research Context
+  institution String?
+  department  String?
+  researchArea String[]
+  
+  // Research Output
+  reports     ResearchReport[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ============ INTERACTION TRACKING ============
+
+model Interaction {
+  id          String   @id @default(cuid())
+  
+  // Participants
+  initiator   User     @relation("InitiatorInteractions", fields: [initiatorId], references: [id], onDelete: Cascade)
+  initiatorId String
+  target      User     @relation("TargetInteractions", fields: [targetId], references: [id], onDelete: Cascade)
+  targetId    String
+  
+  // Stakeholder Context
+  stakeholder StakeholderProfile? @relation(fields: [stakeholderId], references: [id], onDelete: SetNull)
+  stakeholderId String?
+  
+  // Interaction Details
+  type        String   // Meeting, Call, Email, WhatsApp, Event, Workshop, Field-Visit
+  channel     String?  // In-person, Virtual, Phone, Email, Social-Media
+  subject     String?
+  notes       String?  @db.Text
+  duration    Int?     // in minutes
+  location    String?
+  
+  // Outcomes
+  outcome     String?  @db.Text
+  actionItems String[] @db.Text
+  nextSteps   String[] @db.Text
+  followUpDate DateTime?
+  followUpCompleted Boolean @default(false)
+  
+  // Attachments
+  documents   String[] // File paths or URLs
+  photos      String[]
+  recordings  String[]
+  
+  // AI Processing
+  summary     String?  @db.Text // AI-generated summary
+  keyPoints   String[] // AI-extracted key points
+  sentiment   String?  // Positive, Neutral, Negative, Mixed
+  topics      String[] // AI-extracted topics
+  
+  // Ratings & Feedback
+  effectiveness Int? // 1-10 rating
+  feedback    String? @db.Text
+  
+  // Timeline
+  scheduledAt DateTime?
+  occurredAt  DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([initiatorId])
+  @@index([targetId])
+  @@index([stakeholderId])
+  @@index([occurredAt])
+  @@index([type])
+}
+
+// ============ NOTE TAKING ============
+
+model Note {
+  id          String   @id @default(cuid())
+  author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId    String
+  
+  // Note Content
+  title       String?
+  content     String   @db.Text
+  noteType    String?  // Observation, Insight, Todo, Reference
+  
+  // Context
+  tags        String[]
+  stakeholderId String?
+  problemId   String?
+  solutionId  String?
+  
+  // Organization
+  folder      String?
+  pinned      Boolean @default(false)
+  archived    Boolean @default(false)
+  
+  // Sharing
+  sharedWith  String[] // User IDs
+  visibility  String @default("private") // private, team, public
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([authorId])
+  // @@fulltext([title, content])
+}
+
+// ============ CALENDAR & EVENTS ============
+
+model CalendarEvent {
+  id          String   @id @default(cuid())
+  organizer   User     @relation(fields: [organizerId], references: [id], onDelete: Cascade)
+  organizerId String
+  
+  // Event Details
+  title       String
+  description String?  @db.Text
+  eventType   String   // Meeting, Interview, Workshop, Field-Visit, Conference
+  
+  // Participants
+  participantIds String[] // User IDs
+  stakeholderIds String[] // StakeholderProfile IDs
+  
+  // Timing
+  startTime   DateTime
+  endTime     DateTime
+  timezone    String @default("Asia/Kolkata")
+  allDay      Boolean @default(false)
+  
+  // Location
+  location    String?
+  locationDetails String? @db.Text
+  isVirtual   Boolean @default(false)
+  meetingLink String?
+  
+  // Status
+  status      String @default("scheduled") // scheduled, confirmed, cancelled, completed
+  
+  // Reminders
+  reminders   Json? // Array of reminder times
+  
+  // Associated Records
+  interactionId String? // Link to Interaction after completion
+  transcriptId String? // Link to Transcript if recorded
+  
+  // Recurrence
+  recurring   Boolean @default(false)
+  recurrenceRule String? // iCal RRULE format
+  
+  // Metadata
+  notes       String? @db.Text
+  attachments String[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([organizerId])
+  @@index([startTime])
+  @@index([status])
+}
+
+// ============ TRANSCRIPT MANAGEMENT ============
+
+model Transcript {
+  id          String   @id @default(cuid())
+  
+  // Basic Info
+  title       String
+  description String?  @db.Text
+  transcriptType String // Interview, Meeting, Workshop, Focus-Group
+  
+  // Context
+  stakeholder StakeholderProfile? @relation(fields: [stakeholderId], references: [id])
+  stakeholderId String?
+  calendarEventId String?
+  
+  // Participants
+  participants Json? // Array of participant details
+  interviewer  String?
+  interviewee  String?
+  
+  // File Management
+  originalFile String // S3/R2 path to original file
+  fileType    String // audio/mp3, video/mp4, application/pdf
+  fileSize    Int? // in bytes
+  fileName    String
+  
+  // Content
+  rawText     String?  @db.Text
+  processedText String? @db.Text
+  
+  // Processing Status
+  processingStatus String @default("pending") // pending, processing, completed, failed
+  processingError String? @db.Text
+  
+  // AI Processing
+  summary     String?  @db.Text
+  keyPoints   String[]
+  topics      String[]
+  actionItems String[] @db.Text
+  insights    String[] @db.Text
+  quotes      String[] @db.Text
+  
+  // Metadata
+  recordedDate DateTime?
+  duration    Int? // in seconds
+  language    String @default("en")
+  quality     String? // High, Medium, Low
+  
+  // Tagging
+  tags        String[]
+  sectors     String[]
+  problemAreas String[]
+  
+  // Embeddings for RAG
+  embeddings  VectorEmbedding[]
+  
+  // Access Control
+  uploadedBy  String // User ID
+  visibility  String @default("private") // private, team, public
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([stakeholderId])
+  @@index([processingStatus])
+  @@index([recordedDate])
+}
+
+model VectorEmbedding {
+  id          String   @id @default(cuid())
+  
+  // Source
+  sourceType  String // transcript, note, document
+  sourceId    String
+  transcript  Transcript? @relation(fields: [transcriptId], references: [id])
+  transcriptId String?
+  
+  // Content
+  text        String   @db.Text
+  embedding   Float[] // Vector embedding
+  
+  // Metadata
+  metadata    Json? // Additional context
+  chunkIndex  Int? // For chunked content
+  
+  createdAt   DateTime @default(now())
+  
+  @@index([sourceId])
+  @@index([sourceType])
+}
+
+// ============ RESEARCH REPORTS ============
+
+model ResearchReport {
+  id          String   @id @default(cuid())
+  
+  // Report Details
+  title       String
+  reportType  String // Sector-Analysis, District-Profile, Problem-Deep-Dive, Solution-Assessment
+  status      String @default("draft") // draft, in-review, published
+  
+  // Scope
+  scope       Json? // Structured data about report scope
+  districts   String[]
+  sectors     Sector[]
+  timeFrame   Json? // { from: Date, to: Date }
+  
+  // Research Questions
+  researchQuestions String[] @db.Text
+  methodology String? @db.Text
+  
+  // Content Sections
+  executiveSummary String? @db.Text
+  introduction String? @db.Text
+  findings    String?  @db.Text
+  analysis    String?  @db.Text
+  recommendations String[] @db.Text
+  conclusions String?  @db.Text
+  
+  // Key Findings
+  keyFindings String[] @db.Text
+  
+  // Data Sources
+  stakeholdersAnalyzed Int?
+  interactionsAnalyzed Int?
+  transcriptsAnalyzed Int?
+  dataSources String[]
+  
+  // AI Generation
+  generatedByAI Boolean @default(false)
+  aiModel     String?
+  humanReviewed Boolean @default(false)
+  
+  // Authorship
+  createdBy   String // User ID
+  author      User @relation(fields: [createdBy], references: [id])
+
+  contributors String[] // User IDs
+  
+  // Researcher Profile
+  researcherId String?
+  researcher   ResearcherProfile? @relation(fields: [researcherId], references: [id])
+  
+  // Publishing
+  publishedDate DateTime?
+  version     Int @default(1)
+  
+  // Files & Attachments
+  pdfUrl      String?
+  attachments String[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([status])
+  @@index([reportType])
+  @@index([publishedDate])
+}

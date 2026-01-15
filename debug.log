@@ -1,0 +1,36 @@
+D:\stakeholder directory\node_modules\@prisma\client\src\runtime\getPrismaClient.ts:259
+        throw new PrismaClientInitializationError(
+              ^
+
+PrismaClientInitializationError: `PrismaClient` needs to be constructed with a non-empty, valid `PrismaClientOptions`:
+
+```
+new PrismaClient({
+  ...
+})
+```
+
+or
+
+```
+constructor() {
+  super({ ... });
+}
+```
+          
+    at new t (D:\stakeholder directory\node_modules\@prisma\client\src\runtime\getPrismaClient.ts:259:15)
+    at dotenv (D:\stakeholder directory\seed-debug.ts:8:16)
+    at Object.<anonymous> (D:\stakeholder directory\seed-debug.ts:69:6)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object.transformer (D:\stakeholder directory\node_modules\tsx\dist\register-D46fvsV_.cjs:3:1104)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+    at loadCJSModuleWithModuleLoad (node:internal/modules/esm/translators:336:3) {
+  clientVersion: '7.2.0',
+  errorCode: undefined,
+  retryable: undefined
+}
+
+Node.js v24.11.1

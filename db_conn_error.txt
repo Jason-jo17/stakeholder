@@ -1,0 +1,9 @@
+
+Time: 2026-01-14T22:16:53.844Z
+Name: PrismaClientConstructorValidationError
+Message: Using engine type "client" requires either "adapter" or "accelerateUrl" to be provided to PrismaClient constructor.
+Read more at https://pris.ly/d/client-constructor
+Code: undefined
+Full: {
+  "name": "PrismaClientConstructorValidationError"
+}
