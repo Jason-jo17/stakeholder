@@ -32,11 +32,11 @@ export default function SignInPage() {
                 console.error("Login failed", result.error)
                 alert("Login failed: " + result.error)
             } else {
-                // Redirect based on role
-                if (selectedRole === 'student') router.push('/student/dashboard')
-                else if (selectedRole === 'manager') router.push('/manager/dashboard')
-                else if (selectedRole === 'admin') router.push('/dashboard/admin')
-                else router.push('/')
+                // Redirect based on role using hard redirect to ensure session is loaded
+                if (selectedRole === 'student') window.location.href = '/student/dashboard'
+                else if (selectedRole === 'manager') window.location.href = '/manager/dashboard'
+                else if (selectedRole === 'admin') window.location.href = '/dashboard/admin'
+                else window.location.href = '/'
             }
         } catch (error) {
             console.error("Login error", error)
