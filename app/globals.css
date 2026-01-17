@@ -196,4 +196,11 @@
     min-height: 200px;
     border-radius: 0.625rem;
   }
+.form-select-icon {
+  background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuAt_b8lWAAI4DO_cxyjb0GXVFHV3IX9HvmbUUmnRaFacJeAnmyt26maHvURLEKu5YCqioDAD8GSH5mfpPqf4zb0IwSdvF8oKMUqJQDVCA4lbLlrjqYnXvBrFKsaSxZDzp-tqfENExE60DglTMK2oSAGVmv4kNPClzl0u09yKwj78vPJJPHd_JL63fxWaJgviBI1ljFdmalt9T76hIqZjvqpiggIqFZ3Fc0qgL-vMwyJjm0JlH3MYnBDXkSjy6zUdMreiJ1P3tUoD7C8);
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 1.5rem;
+  appearance: none;
+}
 }

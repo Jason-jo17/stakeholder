@@ -6,6 +6,7 @@ import { PLATFORM_PROBLEMS, FILTER_OPTIONS } from "@/lib/data/platform-problems"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Plus, Search, Filter } from "lucide-react"
+import Link from "next/link"
 import { useState } from "react"
 
 export default function ProblemsPage() {
@@ -23,10 +24,12 @@ export default function ProblemsPage() {
                         Explore critical challenges identified across the region
                     </p>
                 </div>
-                <Button>
-                    <Plus className="mr-2 h-4 w-4" />
-                    Submit Problem
-                </Button>
+                <Link href="/problems/submit" passHref>
+                    <Button>
+                        <Plus className="mr-2 h-4 w-4" />
+                        Submit Problem
+                    </Button>
+                </Link>
             </div>
 
             <div className="flex gap-4 mb-8">

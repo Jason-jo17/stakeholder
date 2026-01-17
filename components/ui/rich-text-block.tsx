@@ -26,7 +26,7 @@ export const RichTextBlock: React.FC<RichTextProps> = ({ blocks, className = '' 
             {blocks.map((block) => {
                 switch (block.type) {
                     case 'header':
-                        const Level = `h${block.data.level || 3}` as keyof JSX.IntrinsicElements;
+                        const Level = `h${block.data.level || 3}` as React.ElementType;
                         return (
                             <Level key={block.id} className="font-bold text-[#1C2A3B] mt-6 mb-2" dangerouslySetInnerHTML={{ __html: block.data.text || '' }} />
                         );
