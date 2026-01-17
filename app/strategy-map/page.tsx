@@ -1,6 +1,8 @@
 import { prisma } from '@/lib/prisma';
 import StrategyMapClient from './StrategyMapClient';
 
+export const dynamic = 'force-dynamic';
+
 export default async function StrategyMapPage() {
     const problems = await prisma.problemStatement.findMany({
         take: 5,
