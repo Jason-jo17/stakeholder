@@ -9,11 +9,14 @@ const connectionString = process.env.DATABASE_URL;
 let prismaInstance: PrismaClient;
 
 if (!connectionString) {
-    // If we are running in a build step or dev without DB, handle gracefully or throw clear error
-    console.warn("WARN: DATABASE_URL is missing. Prisma Client will fail to connect.");
-    prismaInstance = new PrismaClient(); // Fallback to avoid immediate crash on import, though queries will fail
+    // During build or when DATABASE_URL is missing, use a dummy connection
+    // This prevents build failures but queries will fail at runtime if DB is not configured
+    console.warn("WARN: DATABASE_URL is missing. Using fallback Prisma Client (queries will fail).");
+    const dummyPool = new Pool({ connectionString: 'postgresql://user:pass@localhost:5432/db' })
+    const dummyAdapter = new PrismaPg(dummyPool)
+    prismaInstance = new PrismaClient({ adapter: dummyAdapter })
 } else {
-    // Use the pool strategy
+    // Use the pool strategy for production
     const pool = new Pool({ connectionString })
     const adapter = new PrismaPg(pool)
     prismaInstance = new PrismaClient({ adapter })
