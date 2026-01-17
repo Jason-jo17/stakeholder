@@ -16,8 +16,8 @@ import { useForm } from "react-hook-form"
 import Uppy from "@uppy/core"
 import AwsS3 from "@uppy/aws-s3"
 // import { Dashboard, useUppy } from "@uppy/react"
-import '@uppy/core/dist/style.css'
-import '@uppy/dashboard/dist/style.css'
+import '@uppy/core/css/style.css'
+import '@uppy/dashboard/css/style.css'
 
 import { StakeholderCombobox } from "@/components/ui/stakeholder-combobox"
 import { CalendarEventSelect } from "@/components/ui/calendar-event-select"
