@@ -7,6 +7,8 @@ import { cn } from "@/lib/utils"
 import { StakeholderTableView } from "@/components/stakeholders/StakeholderTableView"
 import StakeholderMapWrapper from "@/components/stakeholders/StakeholderMapWrapper"
 
+export const dynamic = 'force-dynamic';
+
 const FALLBACK_COORDINATES: Record<string, { lat: number, lng: number }> = {
     "st_1": { lat: 12.9141, lng: 74.8560 },
     "st_2": { lat: 13.9299, lng: 75.5681 },

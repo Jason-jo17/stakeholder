@@ -5,6 +5,8 @@ import { prisma } from '@/lib/prisma'
 import { openai } from '@/lib/ai/openai'
 import { pinecone } from '@/lib/ai/pinecone'
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: NextRequest) {
     const session = await getServerSession(authOptions)
 
