@@ -45,95 +45,116 @@ export default async function StakeholdersPage({ searchParams }: StakeholdersPag
     const view = params.view || 'list'
     const sort = params.sort || 'newest'
 
-    // Fetch filter options
-    const sectors = await prisma.sector.findMany({
-        orderBy: { name: 'asc' }
-    })
+    let sectors = [];
+    let allProblemStatements = [];
+    let districts = [];
+    let stakeholders = [];
+    let mappedStakeholders = [];
+    let sortedStakeholders = [];
 
-    const allProblemStatements = await prisma.problemStatement.findMany({
-        orderBy: { code: 'asc' }
-    })
+    try {
+        // Fetch filter options
+        sectors = await prisma.sector.findMany({
+            orderBy: { name: 'asc' }
+        })
 
-    const districts = await prisma.stakeholderProfile.findMany({
-        select: { district: true },
-        distinct: ['district'],
-        orderBy: { district: 'asc' }
-    })
+        allProblemStatements = await prisma.problemStatement.findMany({
+            orderBy: { code: 'asc' }
+        })
 
-    const stakeholders = await prisma.stakeholderProfile.findMany({
-        where: {
-            AND: [
-                q ? {
-                    OR: [
-                        { user: { name: { contains: q, mode: 'insensitive' } } },
-                        { organization: { contains: q, mode: 'insensitive' } },
-                        { designation: { contains: q, mode: 'insensitive' } },
-                        { problemStatements: { some: { title: { contains: q, mode: 'insensitive' } } } },
-                        { problemStatements: { some: { code: { contains: q, mode: 'insensitive' } } } },
-                    ]
-                } : {},
-                sectorId && sectorId !== 'all' ? {
-                    sectors: { some: { id: sectorId } }
-                } : {},
-                region && region !== 'all' ? {
-                    district: region
-                } : {},
-                problemId && problemId !== 'all' ? {
-                    problemStatements: { some: { id: problemId } }
-                } : {},
-            ]
-        },
-        include: {
-            user: true,
-            sectors: true,
-            problemStatements: true,
-            solutions: true,
-            supportingOrgs: {
-                include: {
-                    organization: true
+        districts = await prisma.stakeholderProfile.findMany({
+            select: { district: true },
+            distinct: ['district'],
+            orderBy: { district: 'asc' }
+        })
+
+        stakeholders = await prisma.stakeholderProfile.findMany({
+            where: {
+                AND: [
+                    q ? {
+                        OR: [
+                            { user: { name: { contains: q, mode: 'insensitive' } } },
+                            { organization: { contains: q, mode: 'insensitive' } },
+                            { designation: { contains: q, mode: 'insensitive' } },
+                            { problemStatements: { some: { title: { contains: q, mode: 'insensitive' } } } },
+                            { problemStatements: { some: { code: { contains: q, mode: 'insensitive' } } } },
+                        ]
+                    } : {},
+                    sectorId && sectorId !== 'all' ? {
+                        sectors: { some: { id: sectorId } }
+                    } : {},
+                    region && region !== 'all' ? {
+                        district: region
+                    } : {},
+                    problemId && problemId !== 'all' ? {
+                        problemStatements: { some: { id: problemId } }
+                    } : {},
+                ]
+            },
+            include: {
+                user: true,
+                sectors: true,
+                problemStatements: true,
+                solutions: true,
+                supportingOrgs: {
+                    include: {
+                        organization: true
+                    }
+                },
+                _count: {
+                    select: {
+                        interactions: true,
+                        linkedStakeholders: true
+                    }
                 }
             },
-            _count: {
-                select: {
-                    interactions: true,
-                    linkedStakeholders: true
-                }
-            }
-        },
-        orderBy: {
-            id: 'asc'
-        },
-        take: 300 // increased limit to allow for sorting
-    })
+            orderBy: {
+                id: 'asc'
+            },
+            take: 300 // increased limit to allow for sorting
+        })
 
-    // In-memory sorting
-    if (sort === 'problems_desc') {
-        stakeholders.sort((a: any, b: any) => (b.problemStatements?.length || 0) - (a.problemStatements?.length || 0));
-    } else if (sort === 'solutions_desc') {
-        stakeholders.sort((a: any, b: any) => (b.solutions?.length || 0) - (a.solutions?.length || 0));
-    } else if (sort === 'resources_desc') {
-        stakeholders.sort((a: any, b: any) => (b.supportingOrgs?.length || 0) - (a.supportingOrgs?.length || 0));
+        // In-memory sorting
+        if (sort === 'problems_desc') {
+            stakeholders.sort((a: any, b: any) => (b.problemStatements?.length || 0) - (a.problemStatements?.length || 0));
+        } else if (sort === 'solutions_desc') {
+            stakeholders.sort((a: any, b: any) => (b.solutions?.length || 0) - (a.solutions?.length || 0));
+        } else if (sort === 'resources_desc') {
+            stakeholders.sort((a: any, b: any) => (b.supportingOrgs?.length || 0) - (a.supportingOrgs?.length || 0));
+        }
+        // Default is 'newest' which is handled by Prisma orderBy
+
+        // Custom sorting: Move "Darshan H V" to the bottom
+        sortedStakeholders = [...stakeholders].sort((a: any, b: any) => {
+            if (a.user.name === "Darshan H V") return 1;
+            if (b.user.name === "Darshan H V") return -1;
+            return 0;
+        });
+
+        // Map to StakeholderProfile interface (ensure compatibility)
+        mappedStakeholders = sortedStakeholders.map((s: any) => {
+            const fallback = FALLBACK_COORDINATES[s.id];
+            return {
+                ...s,
+                lastContacted: s.lastInteraction || null,
+                verificationStatus: s.verificationStatus as "pending" | "verified" | "rejected",
+                latitude: s.latitude || fallback?.lat || null,
+                longitude: s.longitude || fallback?.lng || null
+            };
+        });
+
+    } catch (error) {
+        console.error("Failed to fetch stakeholders:", error);
+        return (
+            <div className="flex flex-col items-center justify-center p-10 bg-destructive/10 text-destructive rounded-lg border border-destructive/20 m-4">
+                <h3 className="text-lg font-bold">Error Loading Data</h3>
+                <p className="text-sm">Could not fetch stakeholders. Please check database connection.</p>
+                <div className="mt-2 text-xs opacity-70 font-mono p-2 bg-black/5 rounded">
+                    {String(error)}
+                </div>
+            </div>
+        )
     }
-    // Default is 'newest' which is handled by Prisma orderBy
-
-    // Custom sorting: Move "Darshan H V" to the bottom
-    const sortedStakeholders = [...stakeholders].sort((a: any, b: any) => {
-        if (a.user.name === "Darshan H V") return 1;
-        if (b.user.name === "Darshan H V") return -1;
-        return 0;
-    });
-
-    // Map to StakeholderProfile interface (ensure compatibility)
-    const mappedStakeholders = sortedStakeholders.map((s: any) => {
-        const fallback = FALLBACK_COORDINATES[s.id];
-        return {
-            ...s,
-            lastContacted: s.lastInteraction || null,
-            verificationStatus: s.verificationStatus as "pending" | "verified" | "rejected",
-            latitude: s.latitude || fallback?.lat || null,
-            longitude: s.longitude || fallback?.lng || null
-        };
-    });
 
     return (
         <main className="flex flex-col flex-1 px-4 md:px-10 py-6 max-w-[1440px] mx-auto w-full">
