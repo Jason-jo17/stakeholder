@@ -11,11 +11,12 @@ async function main() {
     console.log(`Total Stakeholders in DB: ${count}`)
 
     const stk250 = await prisma.stakeholderProfile.findUnique({
-        where: { id: 'STK_250' }
+        where: { id: 'STK_250' },
+        include: { user: true }
     })
 
     if (stk250) {
-        console.log('STK_250 found:', stk250.name)
+        console.log('STK_250 found:', stk250.user.name)
     } else {
         console.log('STK_250 NOT found')
     }
