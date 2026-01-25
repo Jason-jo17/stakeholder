@@ -41,6 +41,7 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { saveToolData } from '@/app/actions/roadmap'
+import { useDebounce } from '@/lib/hooks/use-debounce'
 
 import { StickyNoteNode } from './StickyNoteNode'
 import { ClusterNode } from './ClusterNode'
@@ -79,11 +80,16 @@ export function AffinityMapping({ tool, progress, onDataSaved }: Props) {
     const [edges, setEdges] = useState<Edge[]>([])
     const [saving, setSaving] = useState(false)
     const [searchTerm, setSearchTerm] = useState('')
+    const [lastSavedData, setLastSavedData] = useState<string>(JSON.stringify(progress?.data || INITIAL_DATA))
+
+    const debouncedNodes = useDebounce(nodes, 3000)
+    const debouncedEdges = useDebounce(edges, 3000)
 
     // Initialize data from progress
     useEffect(() => {
         if (progress?.data) {
             const data = progress.data as AffinityMapData
+            setLastSavedData(JSON.stringify(data))
 
             // Map data to ReactFlow nodes
             const initialNodes: FlowNode[] = [
@@ -115,7 +121,12 @@ export function AffinityMapping({ tool, progress, onDataSaved }: Props) {
             ]
 
             setNodes(initialNodes)
-            // relationships to edges if needed, but affinity mapping usually clusters by position
+            setEdges(data.relationships?.map((r, i) => ({
+                id: `e-${i}`,
+                source: r.fromId,
+                target: r.toId,
+                type: 'default'
+            })) || [])
         }
     }, [])
 
@@ -179,9 +190,7 @@ export function AffinityMapping({ tool, progress, onDataSaved }: Props) {
         setNodes((nds) => nds.concat(newCluster))
     }
 
-    const handleSave = async () => {
-        setSaving(true)
-
+    const handleSave = async (isAuto = false) => {
         // Convert ReactFlow state back to our data model
         const appData: AffinityMapData = {
             notes: nodes.filter(n => n.type === 'stickyNote').map(n => ({
@@ -190,7 +199,7 @@ export function AffinityMapping({ tool, progress, onDataSaved }: Props) {
                 color: (n.data as any).color as string,
                 tags: ((n.data as any).tags || []) as string[],
                 position: n.position,
-                clusterId: n.parentId, // ReactFlow parentId identifies cluster
+                clusterId: n.parentId as string,
             })),
             clusters: nodes.filter(n => n.type === 'cluster').map(c => ({
                 id: c.id,
@@ -209,20 +218,32 @@ export function AffinityMapping({ tool, progress, onDataSaved }: Props) {
             }))
         }
 
+        const currentDataStr = JSON.stringify(appData)
+        if (isAuto && currentDataStr === lastSavedData) return
+
+        setSaving(true)
         try {
             const res = await saveToolData(tool.toolId, appData)
             if (res.error) {
-                toast.error(res.error)
+                if (!isAuto) toast.error(res.error)
             } else {
-                toast.success("Affinity Map saved successfully")
+                if (!isAuto) toast.success("Affinity Map saved successfully")
+                setLastSavedData(currentDataStr)
                 if (onDataSaved) onDataSaved()
             }
         } catch (e) {
-            toast.error("An error occurred while saving")
+            if (!isAuto) toast.error("An error occurred while saving")
         } finally {
             setSaving(false)
         }
     }
+
+    // Auto-save effect
+    useEffect(() => {
+        if (nodes.length > 0 || edges.length > 0) {
+            handleSave(true)
+        }
+    }, [debouncedNodes, debouncedEdges])
 
     const clearCanvas = () => {
         if (confirm("Are you sure you want to clear the entire canvas?")) {
@@ -273,7 +294,7 @@ export function AffinityMapping({ tool, progress, onDataSaved }: Props) {
     }
 
     return (
-        <div className="flex flex-col h-[calc(100vh-140px)] bg-slate-50 overflow-hidden rounded-xl border">
+        <div className="flex flex-col h-full bg-slate-50 overflow-hidden rounded-xl border">
             {/* Toolbar */}
             <div className="h-14 border-b bg-white flex items-center justify-between px-4 z-10 shrink-0">
                 <div className="flex items-center gap-2">
@@ -306,7 +327,7 @@ export function AffinityMapping({ tool, progress, onDataSaved }: Props) {
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
-                    <Button size="sm" onClick={handleSave} disabled={saving}>
+                    <Button size="sm" onClick={() => handleSave(false)} disabled={saving}>
                         {saving ? <Sparkles className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
                         Save Progress
                     </Button>
