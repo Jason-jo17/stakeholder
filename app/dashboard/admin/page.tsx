@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/badge"
 import { Users, FileText, Settings, Database, Activity, AlertCircle } from "lucide-react"
 import { AddStakeholderDialog } from "@/components/stakeholders/AddStakeholderDialog"
 
+import Link from "next/link"
+
 export default function AdminDashboard() {
     return (
         <div className="container py-8 space-y-8">
@@ -20,10 +22,12 @@ export default function AdminDashboard() {
                         <Settings className="mr-2 h-4 w-4" />
                         Settings
                     </Button>
-                    <Button>
-                        <Database className="mr-2 h-4 w-4" />
-                        Data Tools
-                    </Button>
+                    <Link href="/dashboard/admin/roadmap">
+                        <Button>
+                            <Database className="mr-2 h-4 w-4" />
+                            Tool Sandbox
+                        </Button>
+                    </Link>
                 </div>
             </div>
 

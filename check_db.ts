@@ -1,3 +1,5 @@
+import dotenv from 'dotenv';
+dotenv.config();
 import { Pool } from 'pg'
 import { PrismaPg } from '@prisma/adapter-pg'
 import { PrismaClient } from '@prisma/client'
@@ -14,6 +16,9 @@ async function main() {
         const adapter = new PrismaPg(pool)
 
         prisma = new PrismaClient({ adapter });
+        console.log("Testing connection with a query...");
+        const userCount = await prisma.user.count();
+        console.log(`Connection successful! Total users in database: ${userCount}`);
         await prisma.$disconnect();
     } catch (e: any) {
         const fs = require('fs');

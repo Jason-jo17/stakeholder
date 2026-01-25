@@ -1,9 +1,28 @@
 
-Time: 2026-01-14T22:16:53.844Z
-Name: PrismaClientConstructorValidationError
-Message: Using engine type "client" requires either "adapter" or "accelerateUrl" to be provided to PrismaClient constructor.
-Read more at https://pris.ly/d/client-constructor
-Code: undefined
+Time: 2026-01-17T09:25:38.861Z
+Name: PrismaClientKnownRequestError
+Message: 
+Invalid `prisma.user.count()` invocation in
+D:\stakeholder directory\check_db.ts:18:45
+
+  15 
+  16 prisma = new PrismaClient({ adapter });
+  17 console.log("Testing connection with a query...");
+→ 18 const userCount = await prisma.user.count(
+Can't reach database server at base
+Code: P1001
 Full: {
-  "name": "PrismaClientConstructorValidationError"
+  "code": "P1001",
+  "meta": {
+    "modelName": "User",
+    "driverAdapterError": {
+      "name": "DriverAdapterError",
+      "cause": {
+        "kind": "DatabaseNotReachable",
+        "host": "base"
+      }
+    }
+  },
+  "clientVersion": "7.2.0",
+  "name": "PrismaClientKnownRequestError"
 }

@@ -605,6 +605,10 @@ model StudentProfile {
   managerId   String?
   manager     ManagerProfile? @relation(fields: [managerId], references: [id])
   
+  // Team Context
+  teamId      String?
+  team        Team?    @relation(fields: [teamId], references: [id])
+  
   // Progress Tracking
   stage       String? // Ideation, Research, Validation, Prototyping, Pilot, Scale
   milestones  Json?
@@ -614,6 +618,175 @@ model StudentProfile {
   
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  
+  @@index([teamId])
+}
+
+// ============ TEAM & ROADMAP ============
+
+model Team {
+  id          String   @id @default(cuid())
+  name        String
+  cohort      String?
+  startDate   DateTime @default(now())
+  
+  // Members
+  members     StudentProfile[]
+  
+  // Mento Assignment
+  mentorId    String?
+  mentor      ManagerProfile? @relation(fields: [mentorId], references: [id])
+  
+  // Progress
+  progress    TeamProgress?
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([mentorId])
+}
+
+model RoadmapStage {
+  id          String   @id @default(cuid())
+  stageNumber Int      @unique // 1, 2, 3, 4
+  name        String
+  weeks       Int[]    // [0,1,2]
+  
+  // Content
+  tools       RoadmapTool[]
+  
+  // Completion Logic
+  minimumScore Int?
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model RoadmapTool {
+  id          String   @id @default(cuid())
+  toolId      String   @unique // "mtp_ikigai"
+  name        String
+  week        Int
+  
+  // Relations
+  stageId     String
+  stage       RoadmapStage @relation(fields: [stageId], references: [id])
+  
+  tasks       RoadmapTask[]
+  
+  // Metadata
+  description String?  @db.Text
+  timeEstimateHours Int?
+  isLocked    Boolean  @default(true)
+  
+  // Dependencies
+  dependencies String[] // IDs of other tools
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([stageId])
+}
+
+model RoadmapTask {
+  id          String   @id @default(cuid())
+  description String
+  deliverableType String // "canvas", "pdf", "link"
+  
+  // Validation
+  validationCriteria String[] 
+  
+  // Parent Tool
+  toolId      String
+  tool        RoadmapTool @relation(fields: [toolId], references: [id])
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([toolId])
+}
+
+// ============ PROGRESS TRACKING ============
+
+model TeamProgress {
+  id          String   @id @default(cuid())
+  teamId      String   @unique
+  team        Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  
+  // Current State
+  currentStageId Int      @default(1)
+  currentWeek    Int      @default(0)
+  
+  // Metrics
+  startedAt   DateTime @default(now())
+  lastActive  DateTime @default(now())
+  
+  // Detailed Progress
+  toolProgress ToolProgress[]
+  stageProgress StageProgress[]
+  
+  updatedAt   DateTime @updatedAt
+}
+
+model StageProgress {
+  id          String   @id @default(cuid())
+  teamProgressId String
+  teamProgress TeamProgress @relation(fields: [teamProgressId], references: [id], onDelete: Cascade)
+  
+  stageNumber Int
+  status      String   @default("locked") // locked, unlocked, in_progress, completed
+  
+  completedAt DateTime?
+  score       Int?
+  feedback    String?  @db.Text
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([teamProgressId, stageNumber])
+}
+
+model ToolProgress {
+  id          String   @id @default(cuid())
+  teamProgressId String
+  teamProgress TeamProgress @relation(fields: [teamProgressId], references: [id], onDelete: Cascade)
+  
+  toolId      String // Reference to RoadmapTool.toolId
+  status      String @default("locked") // locked, unlocked, in_progress, completed
+  
+  startedAt   DateTime?
+  completedAt DateTime?
+  
+  // Storage for tool-specific data (e.g. Canvas data)
+  data        Json?
+  
+  // Task Tracking
+  taskProgress TaskProgress[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([teamProgressId, toolId])
+}
+
+model TaskProgress {
+  id          String   @id @default(cuid())
+  toolProgressId String
+  toolProgress ToolProgress @relation(fields: [toolProgressId], references: [id], onDelete: Cascade)
+  
+  taskId      String   // Reference to RoadmapTask.id
+  status      String   @default("pending") // pending, submitted, approved, rejected
+  
+  submissionUrl String?
+  submissionText String? @db.Text
+  
+  submittedAt DateTime?
+  feedback    String?  @db.Text
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([toolProgressId, taskId])
 }
 
 model ValueProposition {
@@ -673,6 +846,7 @@ model ManagerProfile {
   // Mentorship Capacity
   maxMentees  Int?
   mentees     StudentProfile[]
+  teams       Team[]
   
   // Focus Areas
   focusSectors String[]
