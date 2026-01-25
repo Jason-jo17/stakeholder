@@ -13,7 +13,7 @@ async function main() {
     await prisma.roadmapTask.deleteMany({})
     await prisma.roadmapTool.deleteMany({})
     await prisma.roadmapStage.deleteMany({})
-  } catch (e) {
+  } catch (e: any) {
     console.log("Tables might not exist yet or error clearing:", e.message)
   }
 
@@ -99,8 +99,8 @@ async function main() {
           tasks: [
             {
               description: "Map causes across 6 categories",
-              deliverable_type: "fishbone_diagram",
-              validation_criteria: [
+              deliverableType: "fishbone_diagram",
+              validationCriteria: [
                 "All 6 categories populated",
                 "Minimum 15 total causes identified",
                 "Root causes prioritized by severity"
