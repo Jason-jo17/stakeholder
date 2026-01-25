@@ -1,6 +1,4 @@
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import { prisma } from '../lib/prisma'
 
 async function main() {
     console.log('Starting seed: Full 22-Tool Roadmap...')
@@ -35,7 +33,7 @@ async function main() {
 
         // STAGE 2
         { id: 't2_1', toolId: 'affinity_mapping', name: 'Affinity Mapping & Clustering', week: 3, stageId: 'stage_2', description: 'Group and prioritize findings' },
-        { id: 't2_2', toolId: 'vpc_tool', name: 'Value Proposition Canvas (VPC) Tool', week: 3, stageId: 'stage_2', description: 'Fit solution to customer pains/gains' },
+        { id: 't2_2', toolId: 'vpc', name: 'Value Proposition Canvas (VPC) Tool', week: 3, stageId: 'stage_2', description: 'Fit solution to customer pains/gains' },
         { id: 't2_3', toolId: 'errc_grid', name: 'ERRC Grid', week: 3, stageId: 'stage_2', description: 'Eliminate, Reduce, Raise, Create' },
         { id: 't2_4', toolId: 'user_persona', name: 'User Persona & Journey Map', week: 3, stageId: 'stage_2', description: 'Visualize the user experience' },
         { id: 't2_5', toolId: 'crazy_8s', name: 'Crazy 8s Rapid Ideation', week: 3, stageId: 'stage_2', description: 'Generate 8 ideas in 8 minutes' },

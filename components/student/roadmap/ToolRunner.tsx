@@ -83,12 +83,14 @@ export function ToolRunner({ tool, progress, onDataSaved }: ToolRunnerProps) {
         case 'crazy_8s':
         case 'crazy_8':
         case 'rapid_ideation':
+        case 'solution_design':
             return <Crazy8Tool tool={tool} progress={progress} onDataSaved={onDataSaved} />
 
         case 'innovation':
         case 'systematic_innovation':
         case 'triz':
         case 'scamper':
+        case 'triz_scamper':
         case 'innovation_builder':
             return <InnovationTool tool={tool} progress={progress} />
 
