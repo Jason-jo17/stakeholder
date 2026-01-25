@@ -8,6 +8,7 @@ import { FishboneDiagram } from "./tools/FishboneDiagram"
 import { EventPattern } from "./tools/event-pattern/EventPattern"
 import { StakeholderMapping } from "./tools/stakeholder-mapping/StakeholderMapping"
 import { InterviewGuide } from "./tools/interview-guide/InterviewGuide"
+import { AffinityMapping } from "./tools/affinity-mapping/AffinityMapping"
 
 interface ToolRunnerProps {
     tool: any
@@ -45,6 +46,9 @@ export function ToolRunner({ tool, progress, onDataSaved }: ToolRunnerProps) {
         case 'interview_guide':
         case 'interview_framework': // Handle DB mismatch
             return <InterviewGuide tool={tool} progress={progress} onDataSaved={onDataSaved} />
+
+        case 'affinity_mapping':
+            return <AffinityMapping tool={tool} progress={progress} onDataSaved={onDataSaved} />
 
         default:
             return (
