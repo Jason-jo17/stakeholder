@@ -124,7 +124,7 @@ export function StakeholderProfileDialog({ open, onOpenChange, onSave, initialDa
                                 <Label className="cursor-pointer text-sm font-medium">Select Existing</Label>
                                 <Switch
                                     checked={selectMode}
-                                    onChange={(e) => setSelectMode(e.target.checked)}
+                                    onCheckedChange={setSelectMode}
                                 />
                             </div>
                         )}
