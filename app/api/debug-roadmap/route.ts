@@ -15,7 +15,7 @@ export async function GET() {
         }
 
         const student = await prisma.studentProfile.findFirst({
-            where: { user: { email: session.user?.email } },
+            where: { user: { email: session.user?.email || undefined } },
             include: { 
                 user: true,
                 team: { include: { progress: true } } 
