@@ -15,6 +15,7 @@ import { useState } from "react"
 import { useForm } from "react-hook-form"
 import Uppy from "@uppy/core"
 import AwsS3 from "@uppy/aws-s3"
+import { useStakeholders } from "@/lib/hooks/use-calendar"
 // import { Dashboard, useUppy } from "@uppy/react"
 import '@uppy/core/css/style.css'
 import '@uppy/dashboard/css/style.css'
@@ -26,6 +27,7 @@ import { TagInput } from "@/components/ui/tag-input"
 
 export function TranscriptUploadDialog({ open, onOpenChange }: any) {
     const [uploadMethod, setUploadMethod] = useState<'file' | 'text' | 'audio'>('file')
+    const { data: stakeholders } = useStakeholders()
     const form = useForm()
 
     /* const uppy = useUppy(() => {
@@ -143,6 +145,11 @@ export function TranscriptUploadDialog({ open, onOpenChange }: any) {
                                         <StakeholderCombobox
                                             value={field.value}
                                             onChange={field.onChange}
+                                            options={(stakeholders || []).map((s: any) => ({
+                                                value: s.id,
+                                                label: s.user?.name || s.name || "Unknown",
+                                                role: s.designation || s.role
+                                            }))}
                                         />
                                     </FormItem>
                                 )}

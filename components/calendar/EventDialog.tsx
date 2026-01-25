@@ -121,7 +121,11 @@ export function EventDialog({ open, onOpenChange, event, initialDate }: EventDia
                                     <StakeholderCombobox
                                         value={field.value}
                                         onChange={field.onChange}
-                                        stakeholders={stakeholders}
+                                        options={(stakeholders || []).map((s: any) => ({
+                                            value: s.id || (s as any).userId, // Handle potential ID mismatch
+                                            label: s.user?.name || s.name || "Unknown",
+                                            role: s.designation || s.role
+                                        }))}
                                     />
                                 </FormItem>
                             )}
