@@ -11,13 +11,7 @@ const connectionString = process.env.DATABASE_URL || "postgresql://postgres:pass
 import { PrismaClient } from '@prisma/client'
 import { hash } from 'bcryptjs'
 
-const prisma = new PrismaClient({
-    datasources: {
-        db: {
-            url: connectionString,
-        },
-    },
-})
+const prisma = new PrismaClient()
 
 async function main() {
     const email = 'dc.mnglr@gmail.com'
