@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation"
 
 export default function SignInPage() {
     const router = useRouter()
-    const [selectedRole, setSelectedRole] = useState<'student' | 'manager' | 'admin'>('student')
+    const [selectedRole, setSelectedRole] = useState<'student' | 'manager' | 'admin' | 'stakeholder'>('student')
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
     const [isLoading, setIsLoading] = useState(false)
@@ -36,6 +36,7 @@ export default function SignInPage() {
                 if (selectedRole === 'student') window.location.href = '/student/dashboard'
                 else if (selectedRole === 'manager') window.location.href = '/manager/dashboard'
                 else if (selectedRole === 'admin') window.location.href = '/dashboard/admin'
+                else if (selectedRole === 'stakeholder') window.location.href = '/stakeholder/dashboard'
                 else window.location.href = '/'
             }
         } catch (error) {
@@ -123,8 +124,33 @@ export default function SignInPage() {
                                 <span className={`material-symbols-outlined mb-1 ${selectedRole === 'admin' ? 'text-[#6b6bfa]' : 'text-gray-400'}`}>admin_panel_settings</span>
                                 <span className="text-[10px] sm:text-xs font-medium text-center">Admin</span>
                             </label>
+
+                            <label className={`relative flex flex-col items-center justify-center p-3 cursor-pointer rounded-xl border transition-all hover:bg-gray-50 dark:hover:bg-gray-800 
+                                ${selectedRole === 'stakeholder'
+                                    ? 'border-[#6b6bfa] bg-[#6b6bfa]/5 ring-2 ring-[#6b6bfa]'
+                                    : 'border-[#dbdbe6] dark:border-gray-700 bg-white dark:bg-transparent'
+                                }`}
+                                onClick={() => setSelectedRole('stakeholder')}
+                            >
+                                <input className="sr-only" name="role" type="radio" value="stakeholder" checked={selectedRole === 'stakeholder'} readOnly />
+                                <span className={`material-symbols-outlined mb-1 ${selectedRole === 'stakeholder' ? 'text-[#6b6bfa]' : 'text-gray-400'}`}>handshake</span>
+                                <span className="text-[10px] sm:text-xs font-medium text-center">Stakeholder</span>
+                            </label>
                         </div>
                     </div>
+
+                    {selectedRole === 'stakeholder' && (
+                        <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-900 rounded-lg text-sm text-blue-800 dark:text-blue-300">
+                            <p className="font-bold flex items-center gap-2">
+                                <span className="material-symbols-outlined text-sm">info</span>
+                                Demo Credentials:
+                            </p>
+                            <div className="mt-2 text-xs font-mono bg-white/50 dark:bg-black/20 p-2 rounded">
+                                <p>Email: <strong>dc.mnglr@gmail.com</strong></p>
+                                <p>Password: <strong>password</strong></p>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Form Fields */}
                     <form className="space-y-5" onSubmit={handleLogin}>
@@ -139,6 +165,7 @@ export default function SignInPage() {
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     required
+                                    suppressHydrationWarning
                                 />
                             </div>
                         </div>
@@ -156,6 +183,7 @@ export default function SignInPage() {
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     required
+                                    suppressHydrationWarning
                                 />
                             </div>
                         </div>
@@ -167,6 +195,7 @@ export default function SignInPage() {
                             className="w-full bg-[#6b6bfa] hover:bg-[#6b6bfa]/90 text-white font-bold py-4 rounded-xl shadow-lg shadow-[#6b6bfa]/20 transition-all flex items-center justify-center gap-2 mt-4 disabled:opacity-50"
                             type="submit"
                             disabled={isLoading}
+                            suppressHydrationWarning
                         >
                             <span>{isLoading ? "Authenticating..." : "Login to Dashboard"}</span>
                             <span className="material-symbols-outlined text-[18px]">arrow_forward</span>

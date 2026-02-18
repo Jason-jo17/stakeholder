@@ -2,24 +2,52 @@
 
 import { useStudentProfile, useMyStakeholders, useMyValuePropositions } from "@/hooks/use-student"
 import { StatCard, StakeholderList, InteractionTimeline, ManagerCard, UpcomingTasksList } from "@/components/student/DashboardComponents"
-import { Users, Target, MessageSquare, AlertCircle, Plus, Map, LayoutDashboard } from "lucide-react"
+import { Users, Target, MessageSquare, AlertCircle, Plus, Map, LayoutDashboard, Rocket, ShieldCheck, Zap, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { RoadmapView } from "@/components/student/roadmap/RoadmapView"
 import { AddStakeholderDialog } from "@/components/stakeholders/AddStakeholderDialog"
+import { RecommendationsList } from "@/components/student/Recommendations"
+import { CofounderRecommendations } from "@/components/student/CofounderRecommendations"
+import { useState } from "react"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { LivingNotes } from "@/components/student/LivingNotes"
+import { CoInnovatorBot } from "@/components/student/CoInnovatorBot"
+import { useQuery } from "@tanstack/react-query"
+
+const SECTORS = ["Energy", "Health", "Fintech", "Agritech", "Edtech", "Deeptech", "Smart Cities"]
+const SOLUTIONS = ["Software/AI", "Hardware/IoT", "D2C/Service", "Deep Science", "Social Enterprise"]
 
 export default function StudentDashboard() {
     const { data: profile } = useStudentProfile()
     const { data: stakeholders } = useMyStakeholders()
     const { data: valueProps } = useMyValuePropositions()
 
+    // Innovator Filters
+    const [selectedSector, setSelectedSector] = useState("Energy")
+    const [selectedSolution, setSelectedSolution] = useState("Software/AI")
+
+    // Fetch recommendations for tool card injection
+    const { data: recommendations } = useQuery({
+        queryKey: ['cofounder-recommendations', selectedSector, selectedSolution],
+        queryFn: async () => {
+            const params = new URLSearchParams({ sector: selectedSector, solution: selectedSolution })
+            const res = await fetch(`/api/student/recommendations?${params.toString()}`)
+            return res.json()
+        },
+    })
+
+    const recs = recommendations?.recommendations || []
+    const getRecForCategory = (cat: string) => recs.find((r: any) => r.category === cat)
+
     // Helper to count unique problem statements (mock logic)
     const getUniqueProblemStatements = (list: any[]) => {
-        // Logic to extract unique problem statements from stakeholders
         return list?.flatMap(s => s.problemStatements) || []
     }
+
+    const [activeTab, setActiveTab] = useState("dashboard")
 
     return (
         <div className="container py-8 space-y-8">
@@ -33,8 +61,8 @@ export default function StudentDashboard() {
                 <AddStakeholderDialog mode="student" />
             </div>
 
-            <Tabs defaultValue="dashboard" className="w-full space-y-6">
-                <TabsList className="grid w-full grid-cols-2 max-w-[400px]">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-6">
+                <TabsList className="grid w-full grid-cols-3 max-w-[600px]">
                     <TabsTrigger value="dashboard" className="flex items-center gap-2">
                         <LayoutDashboard className="h-4 w-4" />
                         Dashboard
@@ -42,6 +70,10 @@ export default function StudentDashboard() {
                     <TabsTrigger value="roadmap" className="flex items-center gap-2">
                         <Map className="h-4 w-4" />
                         Roadmap
+                    </TabsTrigger>
+                    <TabsTrigger value="innovator" className="flex items-center gap-2">
+                        <Target className="h-4 w-4" />
+                        Inunity Innovator
                     </TabsTrigger>
                 </TabsList>
 
@@ -181,8 +213,12 @@ export default function StudentDashboard() {
                             </Card>
                         </div>
 
+
                         {/* Right Column */}
                         <div className="col-span-12 md:col-span-4 space-y-6">
+                            {/* Recommendations */}
+                            <RecommendationsList profile={profile} />
+
                             {/* Manager Info */}
                             {profile?.manager && (
                                 <Card>
@@ -209,7 +245,111 @@ export default function StudentDashboard() {
                 </TabsContent>
 
                 <TabsContent value="roadmap">
-                    <RoadmapView />
+                    <RoadmapView onViewRecommendations={() => setActiveTab("innovator")} />
+                </TabsContent>
+
+                <TabsContent value="innovator" className="space-y-6">
+                    {/* Header & Filters */}
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-primary/5 p-6 rounded-2xl border border-primary/10">
+                        <div className="space-y-1">
+                            <div className="flex items-center gap-3">
+                                <h2 className="text-2xl font-bold tracking-tight">Co Innovator Workspace</h2>
+                                <Button asChild size="sm" variant="outline" className="h-7 px-3 text-[10px] font-bold uppercase tracking-wider border-primary/20 hover:bg-primary hover:text-white transition-all">
+                                    <Link href="/student/cofounder">Full Dashboard</Link>
+                                </Button>
+                            </div>
+                            <p className="text-sm text-muted-foreground">Tailored advice for your project path</p>
+                        </div>
+                        <div className="flex flex-wrap gap-3">
+                            <div className="space-y-1.5">
+                                <span className="text-[10px] font-bold uppercase text-muted-foreground pl-1">Sector</span>
+                                <Select value={selectedSector} onValueChange={setSelectedSector}>
+                                    <SelectTrigger className="w-[160px] h-9 text-xs bg-white">
+                                        <SelectValue placeholder="Select Sector" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {SECTORS.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-1.5">
+                                <span className="text-[10px] font-bold uppercase text-muted-foreground pl-1">Solution Type</span>
+                                <Select value={selectedSolution} onValueChange={setSelectedSolution}>
+                                    <SelectTrigger className="w-[160px] h-9 text-xs bg-white">
+                                        <SelectValue placeholder="Select Solution" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {SOLUTIONS.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                        {/* Left: Tools Grid (8 cols) */}
+                        <div className="lg:col-span-8 space-y-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {[
+                                    { id: 'trl', title: 'TRL Tracker', icon: Rocket, color: 'text-orange-500', path: 'trl-tracker' },
+                                    { id: 'roadmap', title: 'Strategic Roadmap', icon: Map, color: 'text-blue-500', path: 'roadmap' },
+                                    { id: 'compliance', title: 'Compliance Hub', icon: ShieldCheck, color: 'text-emerald-500', path: 'compliance' },
+                                    { id: 'experiments', title: 'Experiment Sandbox', icon: Zap, color: 'text-amber-500', path: 'experiments' },
+                                    { id: 'resources', title: 'Resource Network', icon: Users, color: 'text-purple-500', path: 'resources' },
+                                    { id: 'industry', title: 'Industry Connect', icon: Target, color: 'text-red-500', path: 'industry' },
+                                    { id: 'api', title: 'API Directory', icon: LayoutDashboard, color: 'text-cyan-500', path: 'api-directory' }
+                                ].map((tool) => {
+                                    const rec = getRecForCategory(tool.id)
+                                    const Icon = tool.icon
+                                    return (
+                                        <Card key={tool.id} className="group hover:border-primary/50 transition-all shadow-sm overflow-hidden flex flex-col">
+                                            <CardHeader className="p-4 pb-2 flex flex-row items-center gap-3 space-y-0">
+                                                <div className={`p-2 rounded-lg bg-muted group-hover:bg-primary/10 transition-colors`}>
+                                                    <Icon className={`h-5 w-5 ${tool.color}`} />
+                                                </div>
+                                                <CardTitle className="text-sm font-bold group-hover:text-primary transition-colors">
+                                                    {tool.title}
+                                                </CardTitle>
+                                            </CardHeader>
+                                            <CardContent className="p-4 pt-0 flex-1 space-y-3">
+                                                <div className="min-h-[60px] p-3 rounded-lg bg-muted/30 text-[11px] leading-relaxed border border-transparent group-hover:border-primary/10">
+                                                    {rec ? (
+                                                        <div className="space-y-1">
+                                                            <div className="flex items-center gap-1.5 font-bold text-primary">
+                                                                <Zap className="h-3 w-3 fill-primary" />
+                                                                NEXT STEP
+                                                            </div>
+                                                            <p className="text-muted-foreground">{rec.description}</p>
+                                                        </div>
+                                                    ) : (
+                                                        <p className="text-muted-foreground italic opacity-50">Fetching advice...</p>
+                                                    )}
+                                                </div>
+                                                <Button asChild variant="ghost" size="sm" className="w-full h-8 text-xs font-semibold group-hover:bg-primary group-hover:text-white border border-transparent group-hover:border-primary">
+                                                    <Link href={`/student/cofounder/${tool.path}`}>
+                                                        Enter Tool <ChevronRight className="ml-1 h-3 w-3" />
+                                                    </Link>
+                                                </Button>
+                                            </CardContent>
+                                        </Card>
+                                    )
+                                })}
+                            </div>
+                        </div>
+
+                        {/* Right: Workspace Sidebar (4 cols) */}
+                        <div className="lg:col-span-4 space-y-6">
+                            <div className="min-h-[300px]">
+                                <CofounderRecommendations sector={selectedSector} solution={selectedSolution} />
+                            </div>
+                            <div className="min-h-[220px]">
+                                <LivingNotes />
+                            </div>
+                            <div className="min-h-[320px]">
+                                <CoInnovatorBot />
+                            </div>
+                        </div>
+                    </div>
                 </TabsContent>
             </Tabs>
         </div>

@@ -48,6 +48,7 @@ export function HeroSearch() {
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                                suppressHydrationWarning
                             />
                         </div>
                     </label>
@@ -62,6 +63,7 @@ export function HeroSearch() {
                             className="flex w-full rounded-lg text-[#111118] dark:text-white focus:ring-2 focus:ring-primary/20 border border-[#dcdbe6] dark:border-gray-700 bg-white dark:bg-background h-12 text-sm font-medium px-3 outline-none"
                             value={region}
                             onChange={(e) => setRegion(e.target.value)}
+                            suppressHydrationWarning
                         >
                             <option value="">Global Coverage</option>
                             {FILTER_OPTIONS.regions.map((r, i) => (
@@ -77,6 +79,7 @@ export function HeroSearch() {
                             className="flex w-full rounded-lg text-[#111118] dark:text-white focus:ring-2 focus:ring-primary/20 border border-[#dcdbe6] dark:border-gray-700 bg-white dark:bg-background h-12 text-sm font-medium px-3 outline-none"
                             value={sector}
                             onChange={(e) => setSector(e.target.value)}
+                            suppressHydrationWarning
                         >
                             <option value="">All Sectors</option>
                             {FILTER_OPTIONS.sectors.map((s, i) => (
@@ -92,6 +95,7 @@ export function HeroSearch() {
                             className="flex w-full rounded-lg text-[#111118] dark:text-white focus:ring-2 focus:ring-primary/20 border border-[#dcdbe6] dark:border-gray-700 bg-white dark:bg-background h-12 text-sm font-medium px-3 outline-none"
                             value={impact}
                             onChange={(e) => setImpact(e.target.value)}
+                            suppressHydrationWarning
                         >
                             <option value="">Any Impact Area</option>
                             {FILTER_OPTIONS.sdgs.map((s, i) => (
@@ -106,6 +110,7 @@ export function HeroSearch() {
                     <button
                         onClick={handleSearch}
                         className="w-full md:w-auto min-w-[240px] flex cursor-pointer items-center justify-center overflow-hidden rounded-xl h-14 px-8 bg-primary text-white text-lg font-bold leading-normal tracking-[0.015em] hover:bg-primary/90 transition-all shadow-lg shadow-primary/25"
+                        suppressHydrationWarning
                     >
                         <span className="truncate">Search Stakeholders</span>
                     </button>

@@ -40,6 +40,7 @@ model User {
   studentProfile     StudentProfile?
   managerProfile     ManagerProfile?
   researcherProfile  ResearcherProfile?
+  studentJourney     StudentJourney?
   
   // Activities
   interactionsAsInitiator Interaction[] @relation("InitiatorInteractions")
@@ -343,6 +344,7 @@ model ProblemStatement {
 model Solution {
   id          String   @id @default(cuid())
   code        String   @unique // e.g., "SOL_1.1.A"
+  slug        String?  @unique
   title       String
   description String   @db.Text
   type        String   // Technology, Policy, Process, Infrastructure, Training
@@ -1176,4 +1178,411 @@ model ResearchReport {
   @@index([status])
   @@index([reportType])
   @@index([publishedDate])
+}
+
+// ============ INCUBATOR COFOUNDER MODULE ============
+
+// Core Journey Tracking Models
+model StudentJourney {
+  id                String   @id @default(cuid())
+  userId            String   @unique
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  sector            String   // energy, health, fintech, agritech, edtech, deeptech, smartcities
+  stage             String   // idea, validation, pilot, scaling, growth
+  trlLevel          Int      @default(1) // 1-9
+  complianceScore   Int      @default(0) // 0-100
+  pilotReadiness    Int      @default(0) // 0-100
+  
+  metrics           Json     // { experiments_completed, partners_engaged, funding_raised }
+  milestones        Json     // Array of completed milestone IDs
+  blockers          Json?    // Array of { blocker, impact, status }
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  // Relations
+  trlEvidences      TRLEvidence[]
+  experiments       Experiment[]
+  complianceTasks   ComplianceTask[]
+  pilotApplications PilotApplication[]
+  budgetBreakdowns  BudgetBreakdown[]
+  roadmapMilestones RoadmapMilestone[]
+  resourceBookings  ResourceBooking[]
+  
+  @@index([userId])
+  @@index([sector])
+  @@index([stage])
+}
+
+model TRLEvidence {
+  id                String   @id @default(cuid())
+  journeyId         String
+  journey           StudentJourney @relation(fields: [journeyId], references: [id], onDelete: Cascade)
+  
+  trlLevel          Int      // 1-9
+  evidenceType      String   // document, video, test_results, pilot_data, patent, publication
+  evidenceUrl       String?
+  evidenceText      String   @db.Text
+  
+  aiScore           Int?     // 0-100 AI assessment score
+  aiRecommendations Json?    // Array of recommendations from AI
+  reviewerNotes     String?  @db.Text
+  
+  status            String   @default("pending") // pending, submitted, under_review, approved, rejected
+  submittedAt       DateTime @default(now())
+  reviewedAt        DateTime?
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  @@index([journeyId])
+  @@index([trlLevel])
+  @@index([status])
+}
+
+model Experiment {
+  id                String   @id @default(cuid())
+  journeyId         String
+  journey           StudentJourney @relation(fields: [journeyId], references: [id], onDelete: Cascade)
+  
+  title             String
+  type              String   // digital_simulation, hardware_stress_test, market_validation, field_trial
+  hypothesis        String   @db.Text
+  methodology       String   @db.Text
+  
+  successCriteria   Json     // Array of { metric, threshold, importance }
+  metrics           Json     // { success_rate, confidence, iterations, data_points }
+  findings          String?  @db.Text
+  dataUrl           String?
+  
+  status            String   @default("planned") // planned, in_progress, completed, failed
+  startDate         DateTime?
+  endDate           DateTime?
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  @@index([journeyId])
+  @@index([status])
+  @@index([type])
+}
+
+model ComplianceTask {
+  id                String   @id @default(cuid())
+  journeyId         String
+  journey           StudentJourney @relation(fields: [journeyId], references: [id], onDelete: Cascade)
+  
+  title             String
+  category          String   // regulatory, data_privacy, safety, environmental, financial, legal, sector_specific
+  riskLevel         String   // low, medium, high, critical
+  regulatoryBody    String?  // FDA, SEBI, RBI, CDSCO, IRDAI, etc.
+  
+  description       String   @db.Text
+  certificationStatus String @default("not_started") // not_started, in_progress, completed, expired
+  evidenceUrls      Json?    // Array of document URLs
+  
+  dueDate           DateTime?
+  completedAt       DateTime?
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  @@index([journeyId])
+  @@index([category])
+  @@index([riskLevel])
+  @@index([certificationStatus])
+}
+
+model PilotApplication {
+  id                String   @id @default(cuid())
+  journeyId         String
+  journey           StudentJourney @relation(fields: [journeyId], references: [id], onDelete: Cascade)
+  
+  partnerName       String
+  partnerType       String   // corporate, government, institution, consortium
+  
+  title             String
+  description       String   @db.Text
+  userTarget        Int?
+  revenueTarget     Decimal? @db.Decimal(15, 2)
+  duration          Int?     // Days
+  
+  kpis              Json     // { metric, target, actual, unit }
+  weeklyReports     Json?    // Array of { week, summary, metrics, files }
+  
+  status            String   @default("available") // available, applied, accepted, in_progress, completed, rejected
+  appliedAt         DateTime?
+  startDate         DateTime?
+  endDate           DateTime?
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  @@index([journeyId])
+  @@index([status])
+  @@index([partnerType])
+}
+
+model BudgetBreakdown {
+  id                String   @id @default(cuid())
+  journeyId         String
+  journey           StudentJourney @relation(fields: [journeyId], references: [id], onDelete: Cascade)
+  
+  category          String   // testing, compliance, pilot, manufacturing, operations, marketing
+  plannedAmount     Decimal  @db.Decimal(15, 2)
+  spentAmount       Decimal  @default(0) @db.Decimal(15, 2)
+  
+  lineItems         Json     // Array of { item, amount, status }
+  budgetPeriod      String   // Q1_2026, FY_2026, etc.
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  @@index([journeyId])
+  @@index([category])
+}
+
+model RoadmapMilestone {
+  id                String   @id @default(cuid())
+  journeyId         String
+  journey           StudentJourney @relation(fields: [journeyId], references: [id], onDelete: Cascade)
+  
+  title             String
+  description       String?  @db.Text
+  category          String   // trl, compliance, experiment, pilot, funding, product
+  
+  startDate         DateTime
+  endDate           DateTime
+  duration          Int      // Days
+  
+  status            String   @default("pending") // pending, active, completed, delayed, blocked
+  progress          Int      @default(0) // 0-100
+  
+  dependsOn         Json?    // Array of milestone IDs
+  aiSuggested       Boolean  @default(false)
+  recommendationType String? // active, passive
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  @@index([journeyId])
+  @@index([category])
+  @@index([status])
+  @@index([startDate])
+}
+
+model ResourceBooking {
+  id                String   @id @default(cuid())
+  journeyId         String
+  journey           StudentJourney @relation(fields: [journeyId], references: [id], onDelete: Cascade)
+  
+  resourceType      String   // testing_lab, makerspace, expert, funding, event
+  resourceId        String
+  
+  bookingDate       DateTime
+  duration          Int?     // Hours or days
+  status            String   @default("requested") // requested, confirmed, completed, cancelled
+  
+  estimatedCost     Decimal? @db.Decimal(15, 2)
+  actualCost        Decimal? @db.Decimal(15, 2)
+  
+  purpose           String?  @db.Text
+  outcome           String?  @db.Text
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  @@index([journeyId])
+  @@index([resourceType])
+  @@index([status])
+  @@index([bookingDate])
+}
+
+// Resource Network Models (Discovery/Directory)
+model TestingLab {
+  id                    String   @id @default(cuid())
+  name                  String
+  location              String
+  state                 String
+  description           String?  @db.Text
+  
+  sectorSpecialization  Json     // Array of sectors
+  trlLevelSupported     Json     // Array of TRL levels
+  equipment             Json     // Array of equipment names
+  certifications        Json     // Array of certification names
+  
+  availability          String   @default("available") // available, limited, full
+  estimatedCost         String?
+  
+  contactEmail          String?
+  contactPhone          String?
+  website               String?
+  
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  
+  @@index([state])
+  @@index([availability])
+}
+
+model Makerspace {
+  id                String   @id @default(cuid())
+  name              String
+  location          String
+  state             String
+  description       String?  @db.Text
+  
+  equipment         Json     // Array of equipment
+  sectorFocus       Json     // Array of sectors
+  
+  hourlyRate        Decimal? @db.Decimal(10, 2)
+  membershipOptions Json?    // { monthly, quarterly, annual }
+  
+  availability      String   @default("available")
+  contactEmail      String?
+  website           String?
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  @@index([state])
+  @@index([availability])
+}
+
+model FundingOpportunity {
+  id                String   @id @default(cuid())
+  title             String
+  description       String   @db.Text
+  
+  type              String   // government_grant, venture_capital, challenge_based, csr_fund
+  fundingSize       String
+  sectorFocus       Json     // Array of sectors
+  trlEligibility    Json     // Array of TRL levels
+  
+  status            String   @default("open") // open, closing_soon, closed
+  applicationDeadline DateTime?
+  applicationUrl    String?
+  
+  organizationName  String
+  organizationType  String?
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  @@index([status])
+  @@index([type])
+  @@index([applicationDeadline])
+}
+
+model PitchingEvent {
+  id                String   @id @default(cuid())
+  title             String
+  description       String?  @db.Text
+  
+  type              String   // demo_day, pitch_competition, investor_meetup
+  eventDate         DateTime
+  location          String
+  
+  sectorFocus       Json     // Array of sectors
+  prizePool         String?
+  attendees         String?
+  
+  status            String   @default("upcoming") // upcoming, open, closed
+  registrationUrl   String?
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  @@index([status])
+  @@index([eventDate])
+  @@index([type])
+}
+
+model Incubator {
+  id                String   @id @default(cuid())
+  name              String
+  location          String
+  type              String   // incubator, accelerator
+  description       String   @db.Text
+  
+  sectorFocus       Json     // Array of sectors
+  fundingSupport    Boolean  @default(false)
+  fundingAmount     String?
+  
+  status            String   @default("accepting") // accepting, closed, rolling
+  applicationUrl    String?
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  @@index([status])
+  @@index([type])
+}
+
+model Expert {
+  id                String   @id @default(cuid())
+  name              String
+  specialization    String
+  domain            Json     // Array: Regulatory, Technical, IP, Compliance, AI
+  
+  rating            Decimal  @default(0) @db.Decimal(3, 2)
+  sessionsCompleted Int      @default(0)
+  
+  availability      String   @default("available") // available, limited, unavailable
+  hourlyRate        Decimal  @db.Decimal(10, 2)
+  subsidized        Boolean  @default(false)
+  
+  contactEmail      String?
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  @@index([availability])
+  @@index([subsidized])
+}
+
+model GovernmentScheme {
+  id                String   @id @default(cuid())
+  title             String
+  description       String   @db.Text
+  
+  type              String   // startup_india, state_scheme, pli_scheme, capital_subsidy, tax_benefit
+  benefitAmount     String
+  sectorFocus       Json     // Array of sectors
+  
+  eligibilityCriteria Json   // { age, recognition, stage, etc. }
+  status            String   @default("active") // active, expired
+  deadline          DateTime?
+  
+  applicationUrl    String?
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  @@index([status])
+  @@index([type])
+  @@index([deadline])
+}
+
+model SectorAPI {
+  id                String   @id @default(cuid())
+  name              String
+  category          String
+  sector            String   // healthtech, fintech, agritech, energy, smartcities, deeptech
+  description       String   @db.Text
+  
+  apiType           String   // REST, GraphQL, WebSocket
+  sandboxUrl        String?
+  documentationUrl  String
+  
+  sandboxReady      Boolean  @default(false)
+  authRequired      Boolean  @default(true)
+  rateLimits        Json?    // { requests_per_minute, requests_per_day }
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  @@index([sector])
+  @@index([sandboxReady])
 }

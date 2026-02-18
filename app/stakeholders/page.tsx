@@ -217,6 +217,7 @@ export default async function StakeholdersPage({ searchParams }: StakeholdersPag
                                     defaultValue={q}
                                     placeholder="Search keywords..."
                                     className="w-full bg-muted/30 border border-border rounded-lg pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-medium"
+                                    suppressHydrationWarning
                                 />
                             </div>
 
@@ -226,6 +227,7 @@ export default async function StakeholdersPage({ searchParams }: StakeholdersPag
                                     name="sector"
                                     defaultValue={sectorId || 'all'}
                                     className="w-full bg-card border border-border rounded-lg px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20"
+                                    suppressHydrationWarning
                                 >
                                     <option value="all">All Sectors</option>
                                     {sectors.map((s: any) => (
@@ -240,6 +242,7 @@ export default async function StakeholdersPage({ searchParams }: StakeholdersPag
                                     name="problem"
                                     defaultValue={problemId || 'all'}
                                     className="w-full bg-card border border-border rounded-lg px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20"
+                                    suppressHydrationWarning
                                 >
                                     <option value="all">All Problem Statements</option>
                                     {allProblemStatements.map((ps: any) => (
@@ -254,6 +257,7 @@ export default async function StakeholdersPage({ searchParams }: StakeholdersPag
                                     name="region"
                                     defaultValue={region || 'all'}
                                     className="w-full bg-card border border-border rounded-lg px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20"
+                                    suppressHydrationWarning
                                 >
                                     <option value="all">Global Coverage</option>
                                     {districts.map((d: any) => (
@@ -269,6 +273,7 @@ export default async function StakeholdersPage({ searchParams }: StakeholdersPag
                                 name="sort"
                                 defaultValue={sort || 'newest'}
                                 className="w-full bg-card border border-border rounded-lg px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20"
+                                suppressHydrationWarning
                             >
                                 <option value="newest">Newest Added</option>
                                 <option value="problems_desc">Most Context (Problems)</option>
@@ -279,10 +284,10 @@ export default async function StakeholdersPage({ searchParams }: StakeholdersPag
 
                         <input type="hidden" name="view" value={view} />
                         <div className="flex flex-col gap-2 mt-6">
-                            <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-white font-bold h-11 rounded-lg shadow-lg shadow-primary/20">
+                            <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-white font-bold h-11 rounded-lg shadow-lg shadow-primary/20" suppressHydrationWarning>
                                 Apply Filters
                             </Button>
-                            <Button asChild variant="ghost" className="w-full font-bold h-11 rounded-lg border border-transparent hover:border-border">
+                            <Button asChild variant="ghost" className="w-full font-bold h-11 rounded-lg border border-transparent hover:border-border" suppressHydrationWarning>
                                 <Link href="/stakeholders">Clear All</Link>
                             </Button>
                         </div>

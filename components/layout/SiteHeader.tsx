@@ -67,6 +67,14 @@ export function SiteHeader() {
                 active: pathname.startsWith("/dashboard/admin"),
                 public: false
             })
+        } else if (role === "STAKEHOLDER") {
+            routes.push({
+                href: "/stakeholder/dashboard",
+                label: "My Dashboard",
+                icon: LayoutDashboard,
+                active: pathname.startsWith("/stakeholder"),
+                public: false
+            })
         }
     }
 
@@ -110,10 +118,12 @@ export function SiteHeader() {
                             name="q"
                             className="w-full bg-secondary/50 border-none rounded-md pl-10 pr-20 py-2 text-sm focus:ring-1 focus:ring-primary outline-none transition-all"
                             placeholder="Search directory..."
+                            suppressHydrationWarning
                         />
                         <button
                             type="submit"
                             className="absolute right-1.5 top-1/2 -translate-y-1/2 bg-primary hover:bg-primary/90 text-white text-[10px] font-black uppercase px-2.5 py-1.5 rounded-md shadow-sm transition-all active:scale-95"
+                            suppressHydrationWarning
                         >
                             Search
                         </button>
@@ -122,7 +132,7 @@ export function SiteHeader() {
                         {session?.user ? (
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                                    <Button variant="ghost" className="relative h-8 w-8 rounded-full" suppressHydrationWarning>
                                         <div className="flex h-full w-full items-center justify-center rounded-full bg-primary/10 text-primary font-bold">
                                             {session.user.name?.[0]?.toUpperCase() || "U"}
                                         </div>
@@ -145,7 +155,7 @@ export function SiteHeader() {
                                 </DropdownMenuContent>
                             </DropdownMenu>
                         ) : (
-                            <Button variant="ghost" size="sm" asChild>
+                                <Button variant="ghost" size="sm" asChild suppressHydrationWarning>
                                 <Link href="/auth/signin">Log in</Link>
                             </Button>
                         )}

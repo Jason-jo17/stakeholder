@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils"
 import { TimelineTab } from "@/components/stakeholders/tabs/TimelineTab"
 import { WorkTab } from "@/components/stakeholders/tabs/WorkTab"
 import { NetworkTab } from "@/components/stakeholders/tabs/NetworkTab"
+import { ConnectButton } from "@/components/stakeholders/ConnectButton"
 
 interface StakeholderProfilePageProps {
     params: Promise<{
@@ -104,10 +105,7 @@ export default async function StakeholderProfilePage({ params }: StakeholderProf
                     </div>
 
                     <div className="flex gap-3 pt-2">
-                        <Button className="bg-primary hover:bg-primary/90 text-white font-bold h-11 px-8 rounded-lg shadow-lg shadow-primary/20">
-                            <MessageSquare className="mr-2 h-4.5 w-4.5" />
-                            Contact Stakeholder
-                        </Button>
+                        <ConnectButton stakeholderId={stakeholder.id} />
                         <Button variant="outline" className="h-11 px-6 rounded-lg font-bold border-border hover:bg-muted/50">
                             <Share2 className="mr-2 h-4.5 w-4.5" />
                             Share Profile

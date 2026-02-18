@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { prisma } from "@/lib/prisma"
 import { MOCK_PROJECTS } from "@/lib/data/mock-projects"
+import { KnowMoreButton } from '@/components/KnowMoreButton'
 import { notFound } from "next/navigation"
 import { ChevronRight, Share2, FileDown, AlertCircle, TrendingUp, Calendar, CheckCircle2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -11,6 +12,10 @@ interface SolutionPageProps {
         id: string
     }>
 }
+
+// Force dynamic rendering to avoid caching issues
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
 
 export default async function SolutionPage({ params }: SolutionPageProps) {
     const { id } = await params
@@ -42,11 +47,32 @@ export default async function SolutionPage({ params }: SolutionPageProps) {
             approach: "Leveraging technology for real-time crowd management.",
             problemStatements: [ps],
             sectors: p.sectors.map((s: string) => ({ name: s })),
-            supportingOrgs: []
+            supportingOrgs: [],
+            // Add mock proposer data
+            proposer: {
+                name: user.name,
+                email: (user as any).email || `${user.name.toLowerCase().replace(/\s+/g, '.')}@student.edu`,
+                studentProfile: {
+                    team: {
+                        name: (mockProjectData.data as any).team?.name || "Innovation Team",
+                        progress: {
+                            currentTRL: (mockProjectData.data as any).team?.trl_level || 3,
+                            currentStage: (mockProjectData.data as any).team?.current_stage || "ideation",
+                            overallProgress: (mockProjectData.data as any).team?.overall_progress || 45
+                        }
+                    }
+                }
+            }
         };
     } else {
-        solution = await prisma.solution.findUnique({
-            where: { id },
+        solution = await prisma.solution.findFirst({
+            where: {
+                OR: [
+                    { id: id },
+                    { slug: id },
+                    { code: id }
+                ]
+            },
             include: {
                 stakeholders: {
                     include: {
@@ -58,6 +84,32 @@ export default async function SolutionPage({ params }: SolutionPageProps) {
                 supportingOrgs: true
             }
         })
+
+        // Fetch proposer information if proposedBy exists
+        if (solution?.proposedBy) {
+            const proposer = await prisma.user.findUnique({
+                where: { id: solution.proposedBy },
+                include: {
+                    studentProfile: {
+                        include: {
+                            team: {
+                                include: {
+                                    progress: {
+                                        include: {
+                                            toolProgress: true,
+                                            stageProgress: true
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            })
+            if (proposer) {
+                (solution as any).proposer = proposer
+            }
+        }
     }
 
 
@@ -81,10 +133,12 @@ export default async function SolutionPage({ params }: SolutionPageProps) {
                 <Link href="/stakeholders" className="text-muted-foreground text-sm font-medium hover:text-primary transition-colors">Stakeholders</Link>
                 <span className="text-muted-foreground/30 text-sm font-medium">/</span>
                 <span className="text-muted-foreground text-sm font-medium">
-                    {solution.stakeholders[0]?.organization || "Directory"}
+                    {(solution as any).stakeholders?.[0]?.organization || "Directory"}
                 </span>
                 <span className="text-muted-foreground/30 text-sm font-medium">/</span>
-                <span className="text-primary text-sm font-semibold">Solution Explorer</span>
+                <span className="text-primary text-sm font-semibold truncate max-w-[200px] sm:max-w-[400px]">
+                    {solution.title}
+                </span>
             </nav>
 
             {/* Header */}
@@ -94,11 +148,11 @@ export default async function SolutionPage({ params }: SolutionPageProps) {
                     <p className="text-muted-foreground text-base font-normal">Reviewing the proposed strategic solution: {solution.code}</p>
                 </div>
                 <div className="flex gap-3">
-                    <Button variant="outline" className="h-10 gap-2 font-bold shadow-sm">
+                    <Button variant="outline" className="h-10 gap-2 font-bold shadow-sm" suppressHydrationWarning>
                         <Share2 className="w-5 h-5" />
                         <span>Share</span>
                     </Button>
-                    <Button className="h-10 gap-2 font-bold bg-primary text-white shadow-md hover:bg-primary/90 transition-all active:scale-95">
+                    <Button className="h-10 gap-2 font-bold bg-primary text-white shadow-md hover:bg-primary/90 transition-all active:scale-95" suppressHydrationWarning>
                         <FileDown className="w-5 h-5" />
                         <span>Export PDF</span>
                     </Button>
@@ -141,7 +195,7 @@ export default async function SolutionPage({ params }: SolutionPageProps) {
                             </div>
 
                             <div className="space-y-8">
-                                <div>
+                                <div id="executive-summary" className="scroll-mt-24">
                                     <h3 className="text-lg font-bold text-foreground mb-3 flex items-center gap-2">
                                         <span className="w-1 h-5 bg-primary rounded-full"></span>
                                         Executive Summary
@@ -155,6 +209,59 @@ export default async function SolutionPage({ params }: SolutionPageProps) {
                                         </p>
                                     )}
                                 </div>
+
+                                {/* Student Proposer Information */}
+                                {(solution as any).proposer && (
+                                    <div>
+                                        <h3 className="text-lg font-bold text-foreground mb-3 flex items-center gap-2">
+                                            <span className="w-1 h-5 bg-primary rounded-full"></span>
+                                            Proposed By
+                                        </h3>
+                                        <div className="p-5 rounded-xl bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20">
+                                            <div className="flex items-start gap-4 mb-4">
+                                                <div className="h-12 w-12 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-lg">
+                                                    {(solution as any).proposer.name?.[0]?.toUpperCase() || 'S'}
+                                                </div>
+                                                <div className="flex-1">
+                                                    <h4 className="text-base font-bold text-foreground">{(solution as any).proposer.name}</h4>
+                                                    <p className="text-sm text-muted-foreground">{(solution as any).proposer.email}</p>
+                                                    {(solution as any).proposer.studentProfile?.team && (
+                                                        <p className="text-xs text-primary font-medium mt-1">
+                                                            Team: {(solution as any).proposer.studentProfile.team.name}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            {/* Progress Information */}
+                                            {(solution as any).proposer.studentProfile?.team?.progress && (
+                                                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4 pt-4 border-t border-primary/20">
+                                                    <div className="p-3 rounded-lg bg-background/50">
+                                                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">TRL Level</p>
+                                                        <p className="text-lg font-black text-primary">
+                                                            {/* Map Stage ID to TRL. Stage 4 -> TRL 7-8 */}
+                                                            {(solution as any).proposer.studentProfile.team.progress.currentStageId === 4 ? '7/9' :
+                                                                (solution as any).proposer.studentProfile.team.progress.currentStageId || 'N/A'}
+                                                        </p>
+                                                    </div>
+                                                    <div className="p-3 rounded-lg bg-background/50">
+                                                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Current Stage</p>
+                                                        <p className="text-sm font-bold text-foreground capitalize">
+                                                            {(solution as any).proposer.studentProfile.team.progress.currentStageId === 4 ? 'Pilot / MVC' :
+                                                                `Stage ${(solution as any).proposer.studentProfile.team.progress.currentStageId}`}
+                                                        </p>
+                                                    </div>
+                                                    <div className="p-3 rounded-lg bg-background/50">
+                                                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Overall Progress</p>
+                                                        <p className="text-lg font-black text-emerald-600">
+                                                            {(solution as any).proposer.studentProfile.team.progress.overallProgress || 0}%
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                     <div className="p-5 rounded-xl bg-muted/30 border border-border">
@@ -170,10 +277,11 @@ export default async function SolutionPage({ params }: SolutionPageProps) {
                                 </div>
 
                                 <div className="flex items-center gap-4 pt-8 border-t border-border">
-                                    <Button className="flex-1 h-14 bg-primary text-white font-bold text-lg rounded-xl shadow-lg shadow-primary/25 hover:bg-primary/90 transition-all active:scale-[0.98]">
-                                        Know more about proposed solution
-                                    </Button>
-                                    <Button variant="outline" className="flex-1 h-14 font-bold text-lg rounded-xl hover:bg-muted/30 transition-all">
+                                    {/* Scroll to executive summary */}
+                                    <div className="flex-1">
+                                        <KnowMoreButton />
+                                    </div>
+                                    <Button variant="outline" className="flex-1 h-14 font-bold text-lg rounded-xl hover:bg-muted/30 transition-all" suppressHydrationWarning>
                                         Request Feedback
                                     </Button>
                                 </div>

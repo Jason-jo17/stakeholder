@@ -19,6 +19,7 @@ if (!connectionString) {
     // Use the pool strategy for production
     const pool = new Pool({ connectionString })
     const adapter = new PrismaPg(pool)
+    console.log("Initializing PrismaClient with pg adapter (required by generated client)");
     prismaInstance = new PrismaClient({ adapter })
 }
 

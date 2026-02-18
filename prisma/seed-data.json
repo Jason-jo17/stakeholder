@@ -1,0 +1,161 @@
+{
+  "testingLabs": [
+    {
+      "name": "NITK Surathkal Research Labs",
+      "location": "Surathkal, Mangalore",
+      "state": "Karnataka",
+      "description": "State-of-the-art research facilities at NITK.",
+      "sectorSpecialization": ["Deeptech", "Energy", "Agritech"],
+      "trlLevelSupported": [1, 2, 3, 4, 5, 6, 7],
+      "equipment": ["Material Testing", "Environmental Analysis", "Structural Testing", "NDT Equipment"],
+      "certifications": ["ISO/IEC 17025"],
+      "availability": "available",
+      "estimatedCost": "₹10,000 - ₹50,000",
+      "contactEmail": "dean.rd@nitk.edu.in",
+      "website": "https://www.nitk.ac.in"
+    },
+    {
+      "name": "V&G Industrial Testing Laboratories",
+      "location": "Baikampady, Mangalore",
+      "state": "Karnataka",
+      "description": "Specialized industrial testing and inspection services.",
+      "sectorSpecialization": ["Energy", "Smartcities", "Deeptech"],
+      "trlLevelSupported": [4, 5, 6, 7, 8],
+      "equipment": ["Radiographic Testing", "Ultrasonic Testing", "Magnetic Particle", "Dye Penetrant", "Mechanical Testing", "Chemical Analysis"],
+      "certifications": ["NABL", "ISO/IEC 17025"],
+      "availability": "available",
+      "estimatedCost": "₹5,000 - ₹30,000",
+      "contactEmail": "info@vgitl.com",
+      "website": "https://vgitl.com"
+    },
+    {
+      "name": "IIT Bombay SINE Testing Facility",
+      "location": "Powai, Mumbai",
+      "state": "Maharashtra",
+      "description": "Incubation and testing labs for advanced technology startups.",
+      "sectorSpecialization": ["Deeptech", "Health", "Energy"],
+      "trlLevelSupported": [2, 3, 4, 5, 6],
+      "equipment": ["Prototyping Lab", "PCB Fabrication", "3D Printing", "Hardware Testing"],
+      "certifications": ["NABL", "DSIR Recognized"],
+      "availability": "available",
+      "estimatedCost": "₹15,000 - ₹75,000",
+      "contactEmail": "contact@sineiitb.org",
+      "website": "https://sineiitb.org"
+    }
+  ],
+  "makerspaces": [
+    {
+      "name": "K-Tech Innovation Hub CIF Mangaluru",
+      "location": "Mangalore",
+      "state": "Karnataka",
+      "description": "Comprehensive makerspace for hardware prototyping.",
+      "equipment": ["Metal Working Shop", "Wood Working Shop", "3D Printers", "Laser Cutters", "Electronics Lab", "PCB Prototyping"],
+      "sectorFocus": ["Deeptech", "Electronics"],
+      "membershipOptions": {"monthly": "₹3,000", "quarterly": "₹8,000", "annual": "₹25,000"},
+      "availability": "available",
+      "contactEmail": "steam@ikpknowledgepark.com",
+      "website": "https://ikpknowledgepark.com/k-tech-innovation-hub-cif/"
+    },
+    {
+      "name": "Maker's Asylum Mumbai",
+      "location": "Mumbai",
+      "state": "Maharashtra",
+      "description": "A community makerspace for tinkering and industrial design.",
+      "equipment": ["CNC Router", "Laser Cutter", "3D Printers", "Woodworking Tools", "Electronics Bench", "Textile Machines"],
+      "sectorFocus": ["Design", "Hardware"],
+      "membershipOptions": {"monthly": "₹5,000", "quarterly": "₹13,000", "annual": "₹45,000"},
+      "availability": "available",
+      "contactEmail": "hello@makersasylum.com",
+      "website": "https://makersasylum.com"
+    }
+  ],
+  "fundingOpportunities": [
+    {
+      "title": "Startup India Seed Fund Scheme (SISFS)",
+      "description": "Flagship seed fund for Indian startups to provide financial assistance for proof of concept, prototype development, product trials, and market entry.",
+      "organizationName": "DPIIT, Ministry of Commerce",
+      "type": "government_grant",
+      "fundingSize": "₹20L - ₹50L",
+      "trlEligibility": ["2", "3", "4", "5"],
+      "applicationUrl": "https://seedfund.startupindia.gov.in/",
+      "sectorFocus": ["all"]
+    },
+    {
+      "title": "Karnataka Elevate Program",
+      "description": "Grant-in-aid for deeptech and tech-based startups in Karnataka.",
+      "organizationName": "Department of Electronics, IT, BT - Karnataka",
+      "type": "government_grant",
+      "fundingSize": "Up to ₹1 crore",
+      "trlEligibility": ["3", "4", "5", "6", "7"],
+      "applicationUrl": "https://startup.karnataka.gov.in/elevate",
+      "sectorFocus": ["deeptech", "energy", "health"]
+    }
+  ],
+  "pitchingEvents": [
+    {
+      "title": "YC Demo Day Spring 2026",
+      "description": "Y Combinator's flagship demo day.",
+      "type": "demo_day",
+      "eventDate": "2026-03-15T00:00:00Z",
+      "location": "Mountain View (Virtual)",
+      "sectorFocus": ["all"],
+      "status": "open",
+      "registrationUrl": "https://www.ycombinator.com/apply",
+      "prizePool": null,
+      "attendees": "500+ investors"
+    }
+  ],
+  "incubators": [
+    {
+      "name": "NITK STEP (NITK Surathkal)",
+      "location": "Surathkal, Mangalore",
+      "type": "incubator",
+      "description": "Technology incubators at NITK. Alumni: Practo, Delhivery.",
+      "sectorFocus": ["deeptech", "health", "fintech"],
+      "fundingSupport": true,
+      "fundingAmount": "₹5L - ₹25L seed funding",
+      "status": "accepting",
+      "applicationUrl": "https://step.nitk.ac.in"
+    }
+  ],
+  "experts": [
+    {
+      "name": "Dr. Regulatory Compliance Expert",
+      "specialization": "FDA, CDSCO, Medical Device Regulations",
+      "domain": ["Regulatory", "Compliance"],
+      "rating": 4.8,
+      "sessionsCompleted": 45,
+      "availability": "available",
+      "hourlyRate": 5000,
+      "subsidized": false,
+      "contactEmail": "regulatory@expertnetwork.in"
+    }
+  ],
+  "governmentSchemes": [
+    {
+      "title": "Startup India Seed Fund Scheme",
+      "description": "Proof-of-concept validation grants.",
+      "type": "startup_india",
+      "benefitAmount": "₹20L grant + ₹50L debt",
+      "sectorFocus": ["all"],
+      "eligibilityCriteria": {"age": "Startup < 2 years", "stage": "Idea to Revenue"},
+      "status": "active",
+      "deadline": null,
+      "applicationUrl": "https://seedfund.startupindia.gov.in/"
+    }
+  ],
+  "sectorAPIs": [
+    {
+      "name": "ABDM Health Records API",
+      "category": "Core Clinical APIs",
+      "sector": "healthtech",
+      "description": "Access patient health records (FHIR).",
+      "apiType": "REST",
+      "sandboxUrl": "https://sandbox.abdm.gov.in/",
+      "documentationUrl": "https://sandbox.abdm.gov.in/docs/",
+      "sandboxReady": true,
+      "authRequired": true,
+      "rateLimits": {"requests_per_minute": 60, "requests_per_day": 10000}
+    }
+  ]
+}

@@ -11,9 +11,10 @@ import { toast } from "sonner"
 
 interface RoadmapViewProps {
     isAdmin?: boolean
+    onViewRecommendations?: () => void
 }
 
-export function RoadmapView({ isAdmin = false }: RoadmapViewProps) {
+export function RoadmapView({ isAdmin = false, onViewRecommendations }: RoadmapViewProps) {
     const [data, setData] = useState<any>(null)
     const [loading, setLoading] = useState(true)
     const [selectedTool, setSelectedTool] = useState<any>(null)
@@ -101,6 +102,28 @@ export function RoadmapView({ isAdmin = false }: RoadmapViewProps) {
                 <Button variant="outline" size="sm" onClick={fetchData}>
                     <RefreshCw className="h-4 w-4 mr-2" /> Refresh
                 </Button>
+            </div>
+
+            {/* Innovator Recommendation Section */}
+            <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950/20 dark:to-purple-950/20 rounded-xl p-6 border border-indigo-100 dark:border-indigo-900">
+                <div className="flex items-start gap-4">
+                    <div className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm">
+                        <Loader2 className="h-6 w-6 text-indigo-600 animate-pulse" />
+                    </div>
+                    <div>
+                        <h3 className="text-lg font-bold text-foreground">Innovator Recommendation</h3>
+                        <p className="text-sm text-muted-foreground mt-1">
+                            Based on your current progress in "Founder-Problem Fit", we recommend connecting with an Inunity Innovator.
+                        </p>
+                        <Button
+                            size="sm"
+                            className="mt-4 bg-indigo-600 hover:bg-indigo-700 text-white"
+                            onClick={onViewRecommendations}
+                        >
+                            View Recommendations
+                        </Button>
+                    </div>
+                </div>
             </div>
 
             <div className="space-y-12">

@@ -23,6 +23,10 @@ export default async function DashboardPage() {
         redirect("/dashboard/admin")
     }
 
+    if (role === "STAKEHOLDER") {
+        redirect("/stakeholder/dashboard")
+    }
+
     // Fallback if role is undefined or unknown
     return (
         <div className="container py-20 text-center">

@@ -1,0 +1,3 @@
+{
+  "error": "\nInvalid `prisma.solution.findUnique()` invocation in\nD:\\stakeholder directory\\check-debug-json.ts:9:48\n\n  6 const result: any = {}\n  7 \n  8 try {\n→ 9     const solution = await prisma.solution.findUnique(\n"
+}

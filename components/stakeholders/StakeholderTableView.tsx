@@ -140,10 +140,11 @@ export function StakeholderTableView({ stakeholders }: StakeholderTableViewProps
                                             className="h-8 w-8 text-muted-foreground hover:text-green-600 hover:bg-green-50"
                                             title="Add to My Project"
                                             onClick={() => setAddingStakeholder(s)}
+                                            suppressHydrationWarning
                                         >
                                             <UserPlus className="w-4 h-4" />
                                         </Button>
-                                        <button className="text-muted-foreground hover:text-foreground transition-colors p-1">
+                                        <button className="text-muted-foreground hover:text-foreground transition-colors p-1" suppressHydrationWarning>
                                             <MoreVertical className="w-5 h-5" />
                                         </button>
                                     </div>
@@ -173,13 +174,13 @@ export function StakeholderTableView({ stakeholders }: StakeholderTableViewProps
                     Showing <span className="font-bold text-foreground">1-{stakeholders.length}</span> of <span className="font-bold text-foreground">{stakeholders.length}</span> stakeholders
                 </div>
                 <div className="flex gap-2">
-                    <Button variant="outline" size="icon" className="size-9 rounded-lg" disabled>
+                    <Button variant="outline" size="icon" className="size-9 rounded-lg" disabled suppressHydrationWarning>
                         <ChevronLeft className="w-4 h-4" />
                     </Button>
-                    <Button size="icon" className="size-9 rounded-lg font-bold text-sm bg-primary hover:bg-primary/90 text-white border-primary transition-all">1</Button>
-                    <Button variant="outline" size="icon" className="size-9 rounded-lg font-medium text-sm">2</Button>
-                    <Button variant="outline" size="icon" className="size-9 rounded-lg font-medium text-sm">3</Button>
-                    <Button variant="outline" size="icon" className="size-9 rounded-lg">
+                    <Button size="icon" className="size-9 rounded-lg font-bold text-sm bg-primary hover:bg-primary/90 text-white border-primary transition-all" suppressHydrationWarning>1</Button>
+                    <Button variant="outline" size="icon" className="size-9 rounded-lg font-medium text-sm" suppressHydrationWarning>2</Button>
+                    <Button variant="outline" size="icon" className="size-9 rounded-lg font-medium text-sm" suppressHydrationWarning>3</Button>
+                    <Button variant="outline" size="icon" className="size-9 rounded-lg" suppressHydrationWarning>
                         <ChevronRight className="w-4 h-4" />
                     </Button>
                 </div>
