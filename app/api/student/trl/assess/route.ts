@@ -4,10 +4,9 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import OpenAI from 'openai'
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
-
 export async function POST(req: NextRequest) {
     try {
+        const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
         const session = await getServerSession(authOptions)
         if (!session?.user?.id) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -35,7 +34,7 @@ export async function POST(req: NextRequest) {
         const assessment = JSON.parse(completion.choices[0].message.content || '{}')
 
         // Update evidence with AI score
-        const updated = await prisma.tRLEvidence.update({
+        const updated = await (prisma as any).tRLEvidence.update({
             where: { id: evidenceId },
             data: {
                 aiScore: assessment.score,
