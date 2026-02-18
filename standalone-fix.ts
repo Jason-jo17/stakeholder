@@ -32,13 +32,13 @@ async function fix() {
     const id = 'cmkem55kb000ahovgqlwbo2av' // Target Solution ID
 
     // 1. Find or Create Student
-    let student = await prisma.user.findFirst({
+    let student = await (prisma as any).user.findFirst({
         where: { email: 'student@example.com' }
     })
 
     if (!student) {
         console.log('Creating new student user...')
-        student = await prisma.user.create({
+        student = await (prisma as any).user.create({
             data: {
                 email: 'student@example.com',
                 name: 'Priya Sharma',
@@ -64,10 +64,10 @@ async function fix() {
     } else {
         console.log('Found existing student:', student.id)
         // Ensure profile exists
-        const profile = await prisma.studentProfile.findUnique({ where: { userId: student.id } })
+        const profile = await (prisma as any).studentProfile.findUnique({ where: { userId: student.id } })
         if (!profile) {
             console.log('Creating profile for existing student...')
-            await prisma.studentProfile.create({
+            await (prisma as any).studentProfile.create({
                 data: {
                     userId: student.id,
                     institution: 'University of Agricultural Sciences',
@@ -89,7 +89,7 @@ async function fix() {
 
     // 2. Update Solution
     console.log(`Updating solution ${id} with proposer ${student.id} and slug...`)
-    const updated = await prisma.solution.update({
+    const updated = await (prisma as any).solution.update({
         where: { id },
         data: {
             proposedBy: student.id
