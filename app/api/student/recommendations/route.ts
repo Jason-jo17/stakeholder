@@ -16,14 +16,48 @@ export async function GET(req: NextRequest) {
         const { searchParams } = new URL(req.url)
         const selectedSector = searchParams.get('sector') || 'General'
         const selectedSolution = searchParams.get('solution') || 'Technology'
+        const problemId = searchParams.get('problemId')
 
-        const journey = await prisma.studentJourney.findUnique({
+        // Fetch journey with problem details
+        const journey = await (prisma as any).studentJourney.findUnique({
             where: { userId: session.user.id },
+            include: {
+                problemStatement: true
+            }
         })
 
         if (!journey) {
             return NextResponse.json({ recommendations: [] })
         }
+
+        // Fetch Team & Progress for Mentor Feedback & Last Tool
+        const studentProfile = await (prisma as any).studentProfile.findUnique({
+            where: { userId: session.user.id },
+            include: {
+                team: {
+                    include: {
+                        progress: {
+                            include: {
+                                toolProgress: {
+                                    orderBy: { updatedAt: 'desc' },
+                                    take: 3,
+                                    include: {
+                                        taskProgress: {
+                                            where: { feedback: { not: null } },
+                                            take: 1
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        })
+
+        const lastTools = studentProfile?.team?.progress?.toolProgress || []
+        const lastTool = lastTools[0]
+        const mentorFeedback = lastTools.flatMap((tp: any) => tp.taskProgress.map((task: any) => task.feedback)).filter(Boolean).join('. ') || "No recent mentor feedback."
 
         // AI-powered recommendations
         const completion = await openai.chat.completions.create({
@@ -32,7 +66,7 @@ export async function GET(req: NextRequest) {
                 {
                     role: 'system',
                     content: `You are an expert startup advisor for the Inunity Innovator program. 
-                    Your goal is to provide exactly ONE actionable next step for EACH of these 7 categories:
+                    Your goal is to provide exactly ONE HIGHLY SPECIFIC, ACTIONABLE next step for EACH of these 7 categories:
                     1. trl (TRL Tracker)
                     2. roadmap (Strategic Roadmap)
                     3. compliance (Regulatory/Legal)
@@ -41,26 +75,44 @@ export async function GET(req: NextRequest) {
                     6. industry (Pilots/Partners)
                     7. api (Integration/API Directory)
 
-                    Return JSON only with this structure: { "recommendations": [{ "title": "", "description": "", "priority": "high|medium|low", "category": "trl|roadmap|compliance|experiments|resources|industry|api" }] }`,
+                    CRITICAL: Avoid vague advice like "Verify assumption" or "Check roadmap".
+                    Use the provided Problem, Mentor Feedback, and Last Tool Worked On to give surgical advice.
+
+                    Return JSON only with this structure: {
+                        "recommendations": [{ "title": "", "description": "", "priority": "high|medium|low", "category": "trl|roadmap|compliance|experiments|resources|industry|api" }],
+                        "strategicPath": { "nextStage": "", "reasoning": "" }
+                    }`,
                 },
                 {
                     role: 'user',
-                    content: `Context:
+                    content: `Project Context:
                     - Sector: ${selectedSector}
                     - Solution Approach: ${selectedSolution}
-                    - Current TRL: ${journey.trlLevel}
+                    - Focus Problem: ${journey.problemStatement?.title || 'General'}
+                    - Problem Details: ${journey.problemStatement?.description || 'No specific problem selected yet.'}
+                    
+                    Current Progress:
+                    - TRL Level: ${journey.trlLevel}
                     - Stage: ${journey.stage}
                     - Compliance Score: ${journey.complianceScore}%
-                    - Pilot Readiness: ${journey.pilotReadiness}%
+
+                    Team Activity:
+                    - Last Tool Worked On: ${lastTool?.toolId || 'Initialization'}
+                    - Last Tool Feedback: ${lastTool?.taskProgress?.[0]?.feedback || 'Pending review'}
+                    - General Mentor Comments: ${mentorFeedback}
                     
-                    Provide specific, tailored advice for this ${selectedSector} project using a ${selectedSolution} approach.`,
+                    Based on the fact that they just finished/worked on "${lastTool?.toolId || 'the start'}", what specifically should they do next in each of the 7 module tabs?`,
                 },
             ],
             response_format: { type: 'json_object' },
         })
 
         const result = JSON.parse(completion.choices[0].message.content || '{}')
-        return NextResponse.json(result)
+        return NextResponse.json({
+            ...result,
+            mentorFeedback,
+            lastTool: lastTool?.toolId || 'None'
+        })
     } catch (error) {
         console.error('Recommendations error:', error)
         // Comprehensive Fallback

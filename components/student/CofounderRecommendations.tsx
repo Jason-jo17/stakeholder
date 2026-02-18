@@ -11,9 +11,10 @@ import Link from "next/link"
 interface Props {
   sector?: string;
   solution?: string;
+  problemId?: string | null;
 }
 
-export function CofounderRecommendations({ sector, solution }: Props) {
+export function CofounderRecommendations({ sector, solution, problemId }: Props) {
   const { data: journey, isLoading: isLoadingJourney } = useQuery({
     queryKey: ['journey'],
     queryFn: async () => {
@@ -23,11 +24,12 @@ export function CofounderRecommendations({ sector, solution }: Props) {
   })
 
   const { data: recommendations, isLoading: isLoadingRecs } = useQuery({
-    queryKey: ['cofounder-recommendations', sector, solution],
+    queryKey: ['cofounder-recommendations', sector, solution, problemId],
     queryFn: async () => {
       const params = new URLSearchParams()
       if (sector) params.append('sector', sector)
       if (solution) params.append('solution', solution)
+      if (problemId) params.append('problemId', problemId)
       const res = await fetch(`/api/student/recommendations?${params.toString()}`)
       return res.json()
     },
@@ -48,6 +50,7 @@ export function CofounderRecommendations({ sector, solution }: Props) {
   }
 
   const recs = recommendations?.recommendations || []
+  const strategicPath = recommendations?.strategicPath
 
   // Custom grouping logic: only show top 3 priority recs in the strategist panel
   const prioritizedRecs = [...recs].sort((a, b) => {
@@ -56,24 +59,40 @@ export function CofounderRecommendations({ sector, solution }: Props) {
   }).slice(0, 3)
 
   return (
-    <Card className="border-primary/20 bg-primary/5 h-full shadow-lg">
-      <CardHeader className="pb-3">
+    <Card className="border-primary/20 bg-primary/5 h-full shadow-lg overflow-hidden flex flex-col">
+      <CardHeader className="pb-3 border-b bg-white/40">
         <div className="flex items-center gap-2">
           <div className="p-2 bg-primary/10 rounded-lg">
             <Zap className="h-5 w-5 text-primary fill-primary" />
           </div>
           <div>
             <CardTitle className="text-lg">AI Strategist</CardTitle>
-            <CardDescription className="text-[11px] leading-tight">
-              {sector} • {solution}
+            <CardDescription className="text-[11px] leading-tight flex flex-wrap gap-x-2">
+              <span className="font-semibold text-primary/80">{sector}</span>
+              <span className="text-muted-foreground">•</span>
+              <span>{solution}</span>
             </CardDescription>
           </div>
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="flex-1 overflow-y-auto space-y-4 pt-4 scrollbar-thin">
+        {strategicPath && (
+          <div className="bg-gradient-to-br from-primary/10 to-indigo-50/50 p-3 rounded-xl border border-primary/20 space-y-2">
+            <div className="flex items-center gap-2">
+              <div className="p-1 px-1.5 bg-primary text-white text-[9px] font-bold rounded uppercase tracking-wider">
+                Next Strategic Stage
+              </div>
+              <span className="text-xs font-bold text-primary">{strategicPath.nextStage}</span>
+            </div>
+            <p className="text-[10px] text-muted-foreground italic leading-relaxed">
+              "{strategicPath.reasoning}"
+            </p>
+          </div>
+        )}
+
         {prioritizedRecs.length > 0 ? (
           prioritizedRecs.map((rec: any, i: number) => (
-            <div key={i} className="group relative flex items-start gap-3 p-3 rounded-xl border bg-card hover:border-primary/50 transition-all shadow-sm">
+            <div key={i} className="group relative flex items-start gap-3 p-3 rounded-xl border bg-card hover:border-primary/30 transition-all shadow-sm">
               <div className={`mt-0.5 p-1.5 rounded-md ${rec.priority === 'high' ? 'bg-red-50 text-red-600' :
                   rec.priority === 'medium' ? 'bg-amber-50 text-amber-600' :
                     'bg-blue-50 text-blue-600'
@@ -83,7 +102,7 @@ export function CofounderRecommendations({ sector, solution }: Props) {
               <div className="flex-1 space-y-1 overflow-hidden">
                 <div className="flex items-center justify-between gap-2">
                   <h4 className="font-bold text-[11px] truncate">{rec.title}</h4>
-                  <Badge variant={rec.priority === 'high' ? 'destructive' : 'secondary'} className="text-[9px] h-3.5 px-1 py-0">
+                  <Badge variant={rec.priority === 'high' ? 'destructive' : 'secondary'} className="text-[9px] h-3.5 px-1 py-0 capitalize">
                     {rec.priority}
                   </Badge>
                 </div>
@@ -91,8 +110,8 @@ export function CofounderRecommendations({ sector, solution }: Props) {
                   {rec.description}
                 </p>
                 <div className="pt-1">
-                  <Button variant="ghost" size="sm" className="h-6 px-0 text-[10px] text-primary font-bold hover:bg-transparent" asChild>
-                    <Link href={`/student/cofounder/${rec.category === 'trl' ? 'trl-tracker' : rec.category}`}>
+                  <Button variant="link" size="sm" className="h-5 p-0 text-[10px] text-primary font-bold hover:no-underline" asChild>
+                    <Link href={`/student/cofounder/${rec.category === 'trl' ? 'trl-tracker' : rec.category === 'api' ? 'api-directory' : rec.category}`}>
                       Take Action <ChevronRight className="ml-0.5 h-3 w-3" />
                     </Link>
                   </Button>
@@ -106,7 +125,7 @@ export function CofounderRecommendations({ sector, solution }: Props) {
           </div>
         )}
 
-        <div className="pt-2 border-t mt-4">
+        <div className="pt-2 border-t mt-auto">
           <div className="flex justify-between text-[9px] font-bold text-muted-foreground mb-1 uppercase tracking-tighter">
             <span>Progress to TRL {journey?.trlLevel + 1}</span>
             <span>{Math.round(((journey?.trlLevel || 1) / 9) * 100)}%</span>

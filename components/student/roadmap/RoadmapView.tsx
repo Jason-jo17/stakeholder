@@ -6,8 +6,10 @@ import { getRoadmapData, startTool, getAdminRoadmapData } from "@/app/actions/ro
 import { StageCard } from "./StageCard"
 import { TaskDialog } from "./TaskDialog"
 import { Button } from "@/components/ui/button"
-import { Loader2, RefreshCw } from "lucide-react"
+import { Loader2, RefreshCw, Zap, MessageSquare, Target, ChevronRight, Rocket } from "lucide-react"
 import { toast } from "sonner"
+import { useQuery } from "@tanstack/react-query"
+import { Badge } from "@/components/ui/badge"
 
 interface RoadmapViewProps {
     isAdmin?: boolean
@@ -19,6 +21,18 @@ export function RoadmapView({ isAdmin = false, onViewRecommendations }: RoadmapV
     const [loading, setLoading] = useState(true)
     const [selectedTool, setSelectedTool] = useState<any>(null)
     const [dialogOpen, setDialogOpen] = useState(false)
+
+    // Fetch recommendations for the smart card
+    const { data: recommendations } = useQuery({
+        queryKey: ['cofounder-recommendations'],
+        queryFn: async () => {
+            const res = await fetch(`/api/student/recommendations`)
+            return res.json()
+        },
+    })
+
+    const strategicPath = recommendations?.strategicPath
+    const mentorFeedback = recommendations?.mentorFeedback
 
     const fetchData = async () => {
         setLoading(true)
@@ -107,21 +121,67 @@ export function RoadmapView({ isAdmin = false, onViewRecommendations }: RoadmapV
             {/* Innovator Recommendation Section */}
             <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950/20 dark:to-purple-950/20 rounded-xl p-6 border border-indigo-100 dark:border-indigo-900">
                 <div className="flex items-start gap-4">
-                    <div className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm">
-                        <Loader2 className="h-6 w-6 text-indigo-600 animate-pulse" />
-                    </div>
-                    <div>
-                        <h3 className="text-lg font-bold text-foreground">Innovator Recommendation</h3>
-                        <p className="text-sm text-muted-foreground mt-1">
-                            Based on your current progress in "Founder-Problem Fit", we recommend connecting with an Inunity Innovator.
-                        </p>
-                        <Button
-                            size="sm"
-                            className="mt-4 bg-indigo-600 hover:bg-indigo-700 text-white"
-                            onClick={onViewRecommendations}
-                        >
-                            View Recommendations
-                        </Button>
+                    <div className="flex flex-col gap-6">
+                        <div className="flex items-start gap-4">
+                            <div className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm">
+                                <Zap className="h-6 w-6 text-indigo-600 fill-indigo-100" />
+                            </div>
+                            <div className="flex-1">
+                                <h3 className="text-lg font-bold text-foreground">Innovator Recommendation</h3>
+                                <p className="text-sm text-muted-foreground mt-1">
+                                    {recommendations?.recommendations?.[0]?.description || "Based on your current progress, we recommend connecting with an Inunity Innovator."}
+                                </p>
+                                <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="mt-4 border-indigo-200 hover:bg-indigo-50 text-indigo-600 font-bold"
+                                    onClick={onViewRecommendations}
+                                >
+                                    <Target className="mr-2 h-4 w-4" /> View Full Strategist Report
+                                </Button>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-indigo-100 dark:border-indigo-900 pt-6">
+                            {/* Next Stage Section */}
+                            <div className="space-y-3 p-4 bg-white/60 dark:bg-gray-800/60 rounded-xl border border-indigo-100/50">
+                                <div className="flex items-center gap-2">
+                                    <Rocket className="h-4 w-4 text-purple-600" />
+                                    <h4 className="text-sm font-bold text-purple-900 dark:text-purple-100 uppercase tracking-tight">Strategic Path Suggestion</h4>
+                                </div>
+                                {strategicPath ? (
+                                    <div className="space-y-2">
+                                        <div className="flex items-center gap-2">
+                                            <Badge className="bg-purple-100 text-purple-700 hover:bg-purple-100 border-none font-bold">
+                                                Next: {strategicPath.nextStage}
+                                            </Badge>
+                                        </div>
+                                        <p className="text-xs text-muted-foreground leading-relaxed italic">
+                                            "{strategicPath.reasoning}"
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <div className="animate-pulse h-16 bg-muted rounded-lg" />
+                                )}
+                            </div>
+
+                            {/* Mentors Comments Section */}
+                            <div className="space-y-3 p-4 bg-white/60 dark:bg-gray-800/60 rounded-xl border border-indigo-100/50">
+                                <div className="flex items-center gap-2">
+                                    <MessageSquare className="h-4 w-4 text-emerald-600" />
+                                    <h4 className="text-sm font-bold text-emerald-900 dark:text-emerald-100 uppercase tracking-tight">Mentor Feedback Feed</h4>
+                                </div>
+                                {mentorFeedback ? (
+                                    <p className="text-xs text-muted-foreground leading-relaxed">
+                                        {mentorFeedback}
+                                    </p>
+                                ) : (
+                                    <p className="text-xs text-muted-foreground italic">
+                                        No recent mentor feedback found. Continue working on your tools to get feedback!
+                                    </p>
+                                )}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -80,5 +80,41 @@ export class PrismaClient {
         create: async (...args: any[]) => ({} as any),
         findMany: async (...args: any[]) => [] as any[],
     }
+    studentProfile = {
+        findUnique: async (...args: any[]) => null as any,
+        findFirst: async (...args: any[]) => null as any,
+        create: async (...args: any[]) => ({} as any),
+        update: async (...args: any[]) => ({} as any),
+    }
+    studentJourney = {
+        findUnique: async (...args: any[]) => null as any,
+        findFirst: async (...args: any[]) => null as any,
+        create: async (...args: any[]) => ({} as any),
+        update: async (...args: any[]) => ({} as any),
+    }
+    team = {
+        findUnique: async (...args: any[]) => null as any,
+        findMany: async (...args: any[]) => [] as any[],
+        create: async (...args: any[]) => ({} as any),
+        update: async (...args: any[]) => ({} as any),
+    }
+    teamProgress = {
+        findUnique: async (...args: any[]) => null as any,
+        findFirst: async (...args: any[]) => null as any,
+        create: async (...args: any[]) => ({} as any),
+        update: async (...args: any[]) => ({} as any),
+    }
+    toolProgress = {
+        findUnique: async (...args: any[]) => null as any,
+        findMany: async (...args: any[]) => [] as any[],
+        create: async (...args: any[]) => ({} as any),
+        update: async (...args: any[]) => ({} as any),
+    }
+    taskProgress = {
+        findUnique: async (...args: any[]) => null as any,
+        findMany: async (...args: any[]) => [] as any[],
+        create: async (...args: any[]) => ({} as any),
+        update: async (...args: any[]) => ({} as any),
+    }
     // Add other models as needed
 }

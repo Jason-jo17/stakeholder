@@ -28,12 +28,36 @@ export default function StudentDashboard() {
     // Innovator Filters
     const [selectedSector, setSelectedSector] = useState("Energy")
     const [selectedSolution, setSelectedSolution] = useState("Software/AI")
+    const [selectedProblemId, setSelectedProblemId] = useState<string | null>(null)
+
+    // Fetch problem statements for dropdown
+    const { data: problems } = useQuery({
+        queryKey: ['problem-statements'],
+        queryFn: async () => {
+            const res = await fetch('/api/student/problem-statements')
+            return res.json()
+        },
+    })
+
+    // Update journey with selected problem
+    const updateProblem = async (problemId: string) => {
+        setSelectedProblemId(problemId)
+        await fetch('/api/student/journey', {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ problemStatementId: problemId }),
+        })
+    }
 
     // Fetch recommendations for tool card injection
     const { data: recommendations } = useQuery({
-        queryKey: ['cofounder-recommendations', selectedSector, selectedSolution],
+        queryKey: ['cofounder-recommendations', selectedSector, selectedSolution, selectedProblemId],
         queryFn: async () => {
-            const params = new URLSearchParams({ sector: selectedSector, solution: selectedSolution })
+            const params = new URLSearchParams({
+                sector: selectedSector,
+                solution: selectedSolution,
+                problemId: selectedProblemId || ''
+            })
             const res = await fetch(`/api/student/recommendations?${params.toString()}`)
             return res.json()
         },
@@ -280,6 +304,22 @@ export default function StudentDashboard() {
                                     </SelectTrigger>
                                     <SelectContent>
                                         {SOLUTIONS.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-1.5">
+                                <span className="text-[10px] font-bold uppercase text-muted-foreground pl-1">Focus Problem</span>
+                                <Select value={selectedProblemId || "none"} onValueChange={updateProblem}>
+                                    <SelectTrigger className="w-[200px] h-9 text-xs bg-white">
+                                        <SelectValue placeholder="Select Problem" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="none">General Project</SelectItem>
+                                        {problems?.map((p: any) => (
+                                            <SelectItem key={p.id} value={p.id}>
+                                                {p.code}: {p.title}
+                                            </SelectItem>
+                                        ))}
                                     </SelectContent>
                                 </Select>
                             </div>

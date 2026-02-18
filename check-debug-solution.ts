@@ -46,7 +46,8 @@ async function checkSpecificSolution() {
             console.log('  Has Team:', !!proposer.studentProfile?.team)
             if (proposer.studentProfile?.team) {
                 console.log('  Team Name:', proposer.studentProfile.team.name)
-                console.log('  TRL:', proposer.studentProfile.team.progress?.currentTRL)
+                console.log('  Stage:', proposer.studentProfile.team.progress?.currentStageId)
+                console.log('  Week:', proposer.studentProfile.team.progress?.currentWeek)
             } else {
                 console.log('❌ Student has no team assigned')
             }

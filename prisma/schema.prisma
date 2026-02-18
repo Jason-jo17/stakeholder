@@ -323,6 +323,8 @@ model ProblemStatement {
   // Solution Mapping
   solutions   Solution[]
   
+  studentJourneys StudentJourney[]
+  
   // Resources
   documents   String[] // URLs or file paths
   references  String[] // Citations
@@ -1193,6 +1195,9 @@ model StudentJourney {
   trlLevel          Int      @default(1) // 1-9
   complianceScore   Int      @default(0) // 0-100
   pilotReadiness    Int      @default(0) // 0-100
+  
+  problemStatementId String?
+  problemStatement   ProblemStatement? @relation(fields: [problemStatementId], references: [id])
   
   metrics           Json     // { experiments_completed, partners_engaged, funding_raised }
   milestones        Json     // Array of completed milestone IDs
