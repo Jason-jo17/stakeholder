@@ -33,6 +33,7 @@
   "exclude": [
     "node_modules",
     "check-*.ts",
+    "reset-*.ts",
     "seed-*.ts",
     "verify-*.ts",
     "fix-*.ts",

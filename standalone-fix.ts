@@ -25,13 +25,7 @@ try {
 
 // Simplify: Do not use adapter for this fix script
 console.log('Initializing standard PrismaClient...')
-const prisma = new PrismaClient({
-    datasources: {
-        db: {
-            url: databaseUrl
-        }
-    }
-})
+const prisma = new PrismaClient()
 
 async function fix() {
     console.log('--- STARTING FIX ---')
@@ -57,9 +51,8 @@ async function fix() {
                                 name: 'AgriTech Innovators',
                                 progress: {
                                     create: {
-                                        currentTRL: 4,
-                                        currentStage: 'validation',
-                                        overallProgress: 65
+                                        currentStageId: 1,
+                                        currentWeek: 1
                                     }
                                 }
                             }
@@ -83,9 +76,8 @@ async function fix() {
                             name: 'AgriTech Innovators',
                             progress: {
                                 create: {
-                                    currentTRL: 4,
-                                    currentStage: 'validation',
-                                    overallProgress: 65
+                                    currentStageId: 1,
+                                    currentWeek: 1
                                 }
                             }
                         }
@@ -100,8 +92,7 @@ async function fix() {
     const updated = await prisma.solution.update({
         where: { id },
         data: {
-            proposedBy: student.id,
-            slug: 'climate-resilient-coffee'
+            proposedBy: student.id
         }
     })
 

@@ -38,10 +38,8 @@ async function main() {
             console.error(`Error updating ${email}:`, e)
         }
     }
-}
-
-console.log('Password reset complete.')
-await prisma.$disconnect()
+    console.log('Password reset complete.')
+    await prisma.$disconnect()
 }
 
 main()
